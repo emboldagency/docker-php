@@ -64,12 +64,12 @@ resource "coder_agent" "main" {
     "DOTFILES_URI" = data.coder_parameter.dotfiles_uri.value != "" ? data.coder_parameter.dotfiles_uri.value : null,
   }
   startup_script = <<-EOT
+    /bin/bash /coder/configure
     set -e
     if [ -n "$DOTFILES_URI" ]; then
       echo "Installing dotfiles from $DOTFILES_URI"
       coder dotfiles -y "$DOTFILES_URI"
     fi
-    /bin/bash /coder/configure
   EOT
 }
 
