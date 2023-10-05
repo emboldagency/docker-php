@@ -62,6 +62,10 @@ resource "coder_agent" "main" {
   startup_script_behavior = "blocking"
   env = {
     "DOTFILES_URI" = data.coder_parameter.dotfiles_uri.value != "" ? data.coder_parameter.dotfiles_uri.value : null,
+    "CODER_USERNAME" = data.coder_workspace.me.owner
+    "CODER_WORKSPACE_PORT" = 80
+    "CODER_WORKSPACE_NAME" = data.coder_workspace.me.name
+    "APP" = data.coder_workspace.me.name
   }
   startup_script = <<-EOT
     /bin/bash /coder/configure
