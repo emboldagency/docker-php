@@ -113,6 +113,7 @@ resource "docker_container" "mysql" {
   name         = "coder-${data.coder_workspace.me.owner}-${lower(data.coder_workspace.me.name)}-mysql"
   image        = "mariadb:10-jammy"
   restart      = "always"
+  hostname     = "mysql"
   network_mode = docker_network.workspace_network.name
   env = [
     "MYSQL_ROOT_PASSWORD=embold",
