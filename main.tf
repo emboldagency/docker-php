@@ -101,18 +101,19 @@ resource "docker_volume" "home_volume" {
 }
 
 resource "docker_volume" "mysql_data" {
-    name = "coder-${data.coder_workspace.me.owner}-${lower(data.coder_workspace.me.name)}-mysql"
+  name = "coder-${data.coder_workspace.me.owner}-${lower(data.coder_workspace.me.name)}-mysql"
 }
 
 resource "docker_network" "workspace_network" {
   name = "coder-${data.coder_workspace.me.owner}-${lower(data.coder_workspace.me.name)}-network"
+  driver = "bridge"
 }
 
 resource "docker_container" "mysql" {
   name         = "coder-${data.coder_workspace.me.owner}-${lower(data.coder_workspace.me.name)}-mysql"
   image        = "mariadb:10-jammy"
   restart      = "always"
-  network_mode = "workspace_network"
+  network_mode = data.coder_provisioner.docker_network.workspace_network.name
   env = [
     "MYSQL_ROOT_PASSWORD=embold",
     "MYSQL_USER=embold",
@@ -144,7 +145,7 @@ resource "docker_container" "workspace" {
     volume_name    = docker_volume.home_volume.name
     read_only      = false
   }
-  network_mode = "workspace_network"
+  network_mode = data.coder_provisioner.docker_network.workspace_network.name
   # Add labels in Docker to keep track of orphan resources.
   labels {
     label = "coder.owner"
