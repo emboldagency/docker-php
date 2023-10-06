@@ -42,19 +42,6 @@ data "coder_parameter" "docker_image" {
   mutable      = false
 }
 
-data "coder_parameter" "dotfiles_uri" {
-  name         = "dotfiles_uri"
-  display_name = "dotfiles URI"
-  description  = <<-EOF
-  Dotfiles repo URI (optional)
-
-  see https://dotfiles.github.io
-  EOF
-  default      = ""
-  type         = "string"
-  mutable      = true
-}
-
 resource "coder_agent" "main" {
   arch                    = data.coder_provisioner.me.arch
   os                      = "linux"
