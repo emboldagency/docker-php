@@ -1,10 +1,3 @@
-# Note: this example demonstrates the use of
-# dotfiles with Coder templates.
-
-# The Docker aspect of the template only works
-# with macOS/Linux amd64 systems. See the full
-# Docker example for details
-
 terraform {
   required_providers {
     coder = {
@@ -109,7 +102,7 @@ resource "docker_network" "workspace_network" {
   driver = "bridge"
 }
 
-resource "docker_container" "db" {
+resource "docker_container" "mysql" {
   name         = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}-mysql"
   image        = "mariadb:10-jammy"
   restart      = "always"
