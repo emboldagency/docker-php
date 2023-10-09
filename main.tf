@@ -81,8 +81,8 @@ resource "docker_volume" "home_volume" {
   }
 }
 
-resource "docker_volume" "db_volume" {
-  name = "coder-${data.coder_workspace.me.id}-db"
+resource "docker_volume" "mysql_volume" {
+  name = "coder-${data.coder_workspace.me.id}-mysql"
     # Add labels in Docker to keep track of orphan resources.
   labels {
     label = "coder.owner"
@@ -110,10 +110,10 @@ resource "docker_network" "workspace_network" {
 }
 
 resource "docker_container" "db" {
-  name         = "coder-${data.coder_workspace.me.owner}-${lower(data.coder_workspace.me.name)}-db"
+  name         = "coder-${data.coder_workspace.me.owner}-${lower(data.coder_workspace.me.name)}-mysql"
   image        = "mariadb:10-jammy"
   restart      = "always"
-  hostname     = "db"
+  hostname     = "mysql"
   network_mode = docker_network.workspace_network.name
   env = [
     "MYSQL_ROOT_PASSWORD=embold",
@@ -122,7 +122,7 @@ resource "docker_container" "db" {
   ]
   volumes {
     container_path = "/var/lib/mysql"
-    volume_name    = docker_volume.db_volume.name
+    volume_name    = docker_volume.mysql_volume.name
     read_only      = false
   }
 }
