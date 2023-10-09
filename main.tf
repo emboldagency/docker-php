@@ -22,11 +22,6 @@ data "coder_provisioner" "me" {
 }
 
 provider "docker" {
-  registry_auth {
-    address  = "registry.hub.docker.com"
-    username = "emboldcreative"
-    password = "penholder-driller-strung-crablike"
-  }
 }
 
 data "coder_workspace" "me" {
@@ -60,7 +55,7 @@ resource "coder_agent" "main" {
 }
 
 resource "docker_volume" "home_volume" {
-  name = "coder-${data.coder_workspace.id}-home"
+  name = "coder-${data.coder_workspace.me.id}-home"
   # Protect the volume from being deleted due to changes in attributes.
   lifecycle {
     ignore_changes = all
@@ -87,7 +82,7 @@ resource "docker_volume" "home_volume" {
 }
 
 resource "docker_volume" "db_volume" {
-  name = "coder-${data.coder_workspace.id}-db"
+  name = "coder-${data.coder_workspace.me.id}-db"
     # Add labels in Docker to keep track of orphan resources.
   labels {
     label = "coder.owner"
@@ -110,7 +105,7 @@ resource "docker_volume" "db_volume" {
 }
 
 resource "docker_network" "workspace_network" {
-  name = "coder-${data.coder_workspace.id}-network"
+  name = "coder-${data.coder_workspace.me.id}-network"
   driver = "bridge"
 }
 
