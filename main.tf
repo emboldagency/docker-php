@@ -60,7 +60,7 @@ resource "coder_agent" "main" {
 }
 
 resource "docker_volume" "home_volume" {
-  name = "coder-${data.coder_workspace.me.owner}${data.coder_workspace.me.id}-home"
+  name = "coder-${data.coder_workspace.id}-home"
   # Protect the volume from being deleted due to changes in attributes.
   lifecycle {
     ignore_changes = all
@@ -86,20 +86,39 @@ resource "docker_volume" "home_volume" {
   }
 }
 
-resource "docker_volume" "mysql_data" {
-  name = "coder-${data.coder_workspace.me.owner}${data.coder_workspace.me.id}-mysql"
+resource "docker_volume" "db_volume" {
+  name = "coder-${data.coder_workspace.id}-db"
+    # Add labels in Docker to keep track of orphan resources.
+  labels {
+    label = "coder.owner"
+    value = data.coder_workspace.me.owner
+  }
+  labels {
+    label = "coder.owner_id"
+    value = data.coder_workspace.me.owner_id
+  }
+  labels {
+    label = "coder.workspace_id"
+    value = data.coder_workspace.me.id
+  }
+  # This field becomes outdated if the workspace is renamed but can
+  # be useful for debugging or cleaning out dangling volumes.
+  labels {
+    label = "coder.workspace_name_at_creation"
+    value = data.coder_workspace.me.name
+  }
 }
 
 resource "docker_network" "workspace_network" {
-  name = "coder-${data.coder_workspace.me.owner}${data.coder_workspace.me.id}-network"
+  name = "coder-${data.coder_workspace.id}-network"
   driver = "bridge"
 }
 
-resource "docker_container" "mysql" {
-  name         = "coder-${data.coder_workspace.me.owner}-${lower(data.coder_workspace.me.name)}-mysql"
+resource "docker_container" "db" {
+  name         = "coder-${data.coder_workspace.me.owner}-${lower(data.coder_workspace.me.name)}-db"
   image        = "mariadb:10-jammy"
   restart      = "always"
-  hostname     = "mysql"
+  hostname     = "db"
   network_mode = docker_network.workspace_network.name
   env = [
     "MYSQL_ROOT_PASSWORD=embold",
@@ -108,7 +127,7 @@ resource "docker_container" "mysql" {
   ]
   volumes {
     container_path = "/var/lib/mysql"
-    volume_name    = docker_volume.mysql_data.name
+    volume_name    = docker_volume.db_volume.name
     read_only      = false
   }
 }
