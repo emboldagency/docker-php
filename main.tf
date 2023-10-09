@@ -60,7 +60,7 @@ resource "coder_agent" "main" {
 }
 
 resource "docker_volume" "home_volume" {
-  name = "coder-${data.coder_workspace.me.owner}-${lower(data.coder_workspace.me.name)}-home"
+  name = "coder-${data.coder_workspace.me.owner}${data.coder_workspace.me.id}-home"
   # Protect the volume from being deleted due to changes in attributes.
   lifecycle {
     ignore_changes = all
@@ -87,11 +87,11 @@ resource "docker_volume" "home_volume" {
 }
 
 resource "docker_volume" "mysql_data" {
-  name = "coder-${data.coder_workspace.me.owner}-${lower(data.coder_workspace.me.name)}-mysql"
+  name = "coder-${data.coder_workspace.me.owner}${data.coder_workspace.me.id}-mysql"
 }
 
 resource "docker_network" "workspace_network" {
-  name = "coder-${data.coder_workspace.me.owner}-${lower(data.coder_workspace.me.name)}-network"
+  name = "coder-${data.coder_workspace.me.owner}${data.coder_workspace.me.id}-network"
   driver = "bridge"
 }
 
