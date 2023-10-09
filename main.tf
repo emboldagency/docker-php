@@ -153,7 +153,7 @@ resource "docker_container" "workspace" {
 }
 
 resource "coder_app" "apache-app" {
-  agent_id  = coder_agent.dev.id
+  agent_id  = coder_agent.main.id
   slug      = "webapp"
   icon      = "https://upload.wikimedia.org/wikipedia/commons/7/7e/Apache_Feather_Logo.svg"
   url       = "http://localhost:80"
