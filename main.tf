@@ -55,7 +55,7 @@ resource "coder_agent" "main" {
 }
 
 resource "docker_volume" "home_volume" {
-  name = "coder-${data.coder_workspace.me.id}-home"
+  name = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}-${data.coder_workspace.me.id}-home"
   # Protect the volume from being deleted due to changes in attributes.
   lifecycle {
     ignore_changes = all
@@ -82,7 +82,7 @@ resource "docker_volume" "home_volume" {
 }
 
 resource "docker_volume" "mysql_volume" {
-  name = "coder-${data.coder_workspace.me.id}-mysql"
+  name = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}-${data.coder_workspace.me.id}-mysql"
     # Add labels in Docker to keep track of orphan resources.
   labels {
     label = "coder.owner"
@@ -105,12 +105,12 @@ resource "docker_volume" "mysql_volume" {
 }
 
 resource "docker_network" "workspace_network" {
-  name = "coder-${data.coder_workspace.me.id}-network"
+  name = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}-network"
   driver = "bridge"
 }
 
 resource "docker_container" "db" {
-  name         = "coder-${data.coder_workspace.me.owner}-${lower(data.coder_workspace.me.name)}-mysql"
+  name         = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}-mysql"
   image        = "mariadb:10-jammy"
   restart      = "always"
   hostname     = "mysql"
@@ -166,12 +166,12 @@ resource "docker_container" "workspace" {
   }
 }
 
-resource "coder_app" "apache-app" {
+resource "coder_app" "apache_app" {
   agent_id  = coder_agent.main.id
   slug      = "webapp"
   icon      = "https://upload.wikimedia.org/wikipedia/commons/7/7e/Apache_Feather_Logo.svg"
   url       = "http://localhost:80"
-  subdomain = true
+  subdomain = false
   share     = "public"
 
   healthcheck {
