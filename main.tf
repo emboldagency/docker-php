@@ -24,7 +24,7 @@ data "coder_parameter" "docker_image" {
   name         = "docker_image"
   display_name = "Docker image"
   description  = "The Docker image will be used to build your workspace."
-  default      = "emboldcreative/php:8.1-ubuntu22.04"
+  default      = "emboldcreative/php:7.4-ubuntu22.04"
   icon         = "/icon/docker.png"
   type         = "string"
   mutable      = false
