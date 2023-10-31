@@ -11,23 +11,16 @@ terraform {
   }
 }
 
-data "coder_provisioner" "me" {
+provider "coder" {
 }
 
 provider "docker" {
 }
 
-data "coder_workspace" "me" {
+data "coder_provisioner" "me" {
 }
 
-data "coder_parameter" "docker_image" {
-  name         = "docker_image"
-  display_name = "Docker image"
-  description  = "The Docker image will be used to build your workspace."
-  default      = "emboldcreative/php:7.3-ubuntu22.04"
-  icon         = "/icon/docker.png"
-  type         = "string"
-  mutable      = false
+data "coder_workspace" "me" {
 }
 
 resource "coder_agent" "main" {
@@ -35,11 +28,29 @@ resource "coder_agent" "main" {
   os                      = "linux"
   startup_script_timeout  = 180
   startup_script_behavior = "blocking"
+  metadata {
+    display_name = "CPU Usage"
+    key          = "0_cpu_usage"
+    script       = "coder stat cpu"
+    interval     = 10
+    timeout      = 1
+  }
+  metadata {
+    display_name = "RAM Usage"
+    key          = "1_ram_usage"
+    script       = "coder stat mem"
+    interval     = 10
+    timeout      = 1
+  }
   env = {
-    "CODER_USERNAME" = data.coder_workspace.me.owner
+    "CODER_USERNAME"       = data.coder_workspace.me.owner
     "CODER_WORKSPACE_PORT" = 80
     "CODER_WORKSPACE_NAME" = data.coder_workspace.me.name
-    "APP" = data.coder_workspace.me.name
+    "APP"                  = data.coder_workspace.me.name
+    "GIT_AUTHOR_NAME"      = "${data.coder_workspace.me.owner}"
+    "GIT_COMMITTER_NAME"   = "${data.coder_workspace.me.owner}"
+    "GIT_AUTHOR_EMAIL"     = "${data.coder_workspace.me.owner_email}"
+    "GIT_COMMITTER_EMAIL"  = "${data.coder_workspace.me.owner_email}"
   }
   startup_script = <<-EOT
     set -e
@@ -76,7 +87,7 @@ resource "docker_volume" "home_volume" {
 
 resource "docker_volume" "mysql_volume" {
   name = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}-${data.coder_workspace.me.id}-mysql"
-    # Add labels in Docker to keep track of orphan resources.
+  # Add labels in Docker to keep track of orphan resources.
   labels {
     label = "coder.owner"
     value = data.coder_workspace.me.owner
@@ -98,7 +109,7 @@ resource "docker_volume" "mysql_volume" {
 }
 
 resource "docker_network" "workspace_network" {
-  name = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}-network"
+  name   = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}-network"
   driver = "bridge"
 }
 
@@ -109,7 +120,7 @@ resource "docker_container" "mysql" {
   hostname     = "mysql"
   network_mode = docker_network.workspace_network.name
   env = [
-    "MYSQL_ROOT_PASSWORD=embold",
+    "MYSQL_ROOT_PASSWORD=embold", 
     "MYSQL_USER=embold",
     "MYSQL_PASSWORD=embold",
   ]
@@ -120,9 +131,16 @@ resource "docker_container" "mysql" {
   }
 }
 
+resource "docker_image" "php73" {
+  name = "coder-${data.coder_workspace.me.id}"
+  build {
+    context = "./build"
+  }
+}
+
 resource "docker_container" "workspace" {
   count = data.coder_workspace.me.start_count
-  image = data.coder_parameter.docker_image.value
+  image = docker_image.php73.name
   # Uses lower() to avoid Docker restriction on container names.
   name = "coder-${data.coder_workspace.me.owner}-${lower(data.coder_workspace.me.name)}"
   # Hostname makes the shell more user friendly: coder@my-workspace:~$
@@ -172,7 +190,6 @@ resource "coder_app" "apache_app" {
     interval  = 10
     threshold = 30
   }
-
 }
 
 resource "coder_metadata" "container_info" {
@@ -181,6 +198,6 @@ resource "coder_metadata" "container_info" {
 
   item {
     key   = "image"
-    value = data.coder_parameter.docker_image.value
+    value = docker_image.main.name
   }
 }
