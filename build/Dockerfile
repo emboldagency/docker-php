@@ -1,37 +1,39 @@
 FROM emboldcreative/base:ubuntu22.04
 
 # PHP
-RUN sudo apt-get update && sudo apt-get install -y \
-	php7.3 \
-	php7.3-bz2 \
-	php7.3-cgi \
-	php7.3-cli \
-	php7.3-common \
-	php7.3-curl \
-	php7.3-dev \
-	php7.3-enchant \
-	php7.3-fpm \
-	php7.3-gd \
-	php7.3-gmp \
-	php7.3-imap \
-	php7.3-interbase \
-	php7.3-intl \
-	php7.3-json \
-	php7.3-ldap \
-	php7.3-mbstring \
-	php7.3-mysql \
-	php7.3-odbc \
-	php7.3-opcache \
-	php7.3-pgsql \
-	php7.3-phpdbg \
-	php7.3-pspell \
-	php7.3-readline \
-	php7.3-recode \
-	php7.3-snmp \
-	php7.3-sqlite3 \
-	php7.3-sybase \
-	php7.3-tidy \
-	php7.3-xmlrpc \
-	php7.3-xsl \
-	php7.3-zip \
-    libapache2-mod-php7.3
+RUN sudo apt-get update && sudo apt-get install -y -q \
+	php8.1 \
+	php8.1-bz2 \
+	php8.1-cgi \
+	php8.1-cli \
+	php8.1-common \
+	php8.1-curl \
+	php8.1-dev \
+	php8.1-enchant \
+	php8.1-fpm \
+	php8.1-gd \
+	php8.1-gmp \
+	php8.1-imap \
+	php8.1-interbase \
+	php8.1-intl \
+	php8.1-ldap \
+	php8.1-mbstring \
+	php8.1-mysql \
+	php8.1-odbc \
+	php8.1-opcache \
+	php8.1-pgsql \
+	php8.1-phpdbg \
+	php8.1-pspell \
+	php8.1-readline \
+	php8.1-snmp \
+	php8.1-soap \
+	php8.1-sqlite3 \
+	php8.1-sybase \
+	php8.1-tidy \
+	php8.1-xmlrpc \
+	php8.1-xsl \
+	php8.1-zip \
+	php8.1-imagick \
+	php8.1-xdebug \
+	dh-php \
+    libapache2-mod-php8.1

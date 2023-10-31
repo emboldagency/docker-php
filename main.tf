@@ -131,7 +131,7 @@ resource "docker_container" "mysql" {
   }
 }
 
-resource "docker_image" "php73" {
+resource "docker_image" "php81" {
   name = "coder-${data.coder_workspace.me.id}"
   build {
     context = "./build"
@@ -140,7 +140,7 @@ resource "docker_image" "php73" {
 
 resource "docker_container" "workspace" {
   count = data.coder_workspace.me.start_count
-  image = docker_image.php73.name
+  image = docker_image.php81.name
   # Uses lower() to avoid Docker restriction on container names.
   name = "coder-${data.coder_workspace.me.owner}-${lower(data.coder_workspace.me.name)}"
   # Hostname makes the shell more user friendly: coder@my-workspace:~$
