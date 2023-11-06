@@ -42,6 +42,22 @@ resource "coder_agent" "main" {
     interval     = 10
     timeout      = 1
   }
+  metadata {
+    display_name = "Disk Usage"
+    key          = "2_disk_usage"
+    script       = "df -h | awk '$6 ~ /^\\/$/ { print $5 }'"
+    interval     = 10
+    timeout      = 1
+  }
+  metadata {
+    display_name = "Load Average"
+    key          = "3_load_average"
+    script = <<EOT
+        awk '{print $1,$2,$3}' /proc/loadavg
+    EOT
+    interval     = 10
+    timeout      = 1
+  }
   env = {
     "CODER_USERNAME"       = data.coder_workspace.me.owner
     "CODER_WORKSPACE_PORT" = 80
@@ -198,6 +214,6 @@ resource "coder_metadata" "container_info" {
 
   item {
     key   = "image"
-    value = docker_image.main.name
+    value = docker_image.php81.name
   }
 }
