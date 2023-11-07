@@ -131,7 +131,7 @@ resource "docker_network" "workspace_network" {
 
 resource "docker_container" "mysql" {
   name         = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}-mysql"
-  image        = "mariadb:10-jammy"
+  image        = "mariadb:10.4"
   restart      = "always"
   hostname     = "mysql"
   network_mode = docker_network.workspace_network.name
