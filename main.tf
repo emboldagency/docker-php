@@ -52,7 +52,7 @@ resource "coder_agent" "main" {
   metadata {
     display_name = "Load Average"
     key          = "3_load_average"
-    script = <<EOT
+    script       = <<EOT
         awk '{print $1,$2,$3}' /proc/loadavg
     EOT
     interval     = 10
@@ -103,6 +103,10 @@ resource "docker_volume" "home_volume" {
 
 resource "docker_volume" "mysql_volume" {
   name = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}-${data.coder_workspace.me.id}-mysql"
+  # Protect the volume from being deleted due to changes in attributes.
+  lifecycle {
+    ignore_changes = all
+  }
   # Add labels in Docker to keep track of orphan resources.
   labels {
     label = "coder.owner"
@@ -136,7 +140,7 @@ resource "docker_container" "mysql" {
   hostname     = "mysql"
   network_mode = docker_network.workspace_network.name
   env = [
-    "MYSQL_ROOT_PASSWORD=embold", 
+    "MYSQL_ROOT_PASSWORD=embold",
     "MYSQL_USER=embold",
     "MYSQL_PASSWORD=embold",
   ]
@@ -148,10 +152,10 @@ resource "docker_container" "mysql" {
 }
 
 resource "docker_image" "php81" {
-  name = "coder-${data.coder_workspace.me.id}"
-  build {
-    context = "./build"
-  }
+  name = "php81"
+  # build {
+  #   context = "./build"
+  # }
 }
 
 resource "docker_container" "workspace" {
