@@ -5,13 +5,13 @@ USER root
 RUN add-apt-repository -y ppa:ondrej/php && \
   add-apt-repository -y ppa:ondrej/apache2 && \
 	apt-get update && \
-  apt-get install -y -q --no-install-recommends && \
+  apt-get install -y -q --no-install-recommends \
 	# Ruby for capistrano/pulsar
 	ruby \
 	ruby-dev \
 	ruby-irb \
 	ruby-rake \
-	ruby-bigdecimal && \
+	ruby-bigdecimal \
 	# LAMP
 	apache2 \
 	dh-php \
