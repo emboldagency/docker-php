@@ -16,7 +16,7 @@ RUN add-apt-repository -y ppa:ondrej/php && \
 	apache2 \
 	dh-php \
   libapache2-mod-php8.1 \
-	mariadb-client && \
+	mariadb-client \
 	php8.1 \
 	php8.1-bz2 \
 	php8.1-cgi \
@@ -73,15 +73,19 @@ RUN chmod +x /coder/install-composer.sh
 RUN adduser embold www-data && \
     adduser www-data embold
 
-USER embold
+ENV GEM_HOME=/home/embold/.gems
 
 # Ruby gems
-RUN gem install bundler colorls pulsar
+RUN gem install bundler colorls pulsar && \
+  chown -R embold:embold $GEM_HOME && \
+  chmod -R 1777 $GEM_HOME
 
 # Install wp-cli
 RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
     chmod +x wp-cli.phar && \
     mv wp-cli.phar /usr/local/bin/wp
+
+USER embold
 
 HEALTHCHECK CMD curl -f http://localhost || exit 1
 
