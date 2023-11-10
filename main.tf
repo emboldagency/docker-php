@@ -198,12 +198,12 @@ resource "coder_app" "apache_app" {
   agent_id  = coder_agent.main.id
   slug      = "webapp"
   icon      = "https://upload.wikimedia.org/wikipedia/commons/7/7e/Apache_Feather_Logo.svg"
-  url       = "http://localhost:80"
+  url       = "http://localhost:443"
   subdomain = false
   share     = "public"
 
   healthcheck {
-    url       = "http://localhost:80/"
+    url       = "http://localhost:443/"
     interval  = 10
     threshold = 30
   }
