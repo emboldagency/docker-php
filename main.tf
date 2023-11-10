@@ -152,10 +152,7 @@ resource "docker_container" "mysql" {
 }
 
 resource "docker_image" "php81" {
-  name = "php81"
-  # build {
-  #   context = "./build"
-  # }
+  name = "emboldagency/php:3.0.2-ubuntu22.04"
 }
 
 resource "docker_container" "workspace" {

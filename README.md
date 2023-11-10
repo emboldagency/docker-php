@@ -1,40 +1,20 @@
 ---
-name: Develop in Docker with a dotfiles URL
-description: Develop inside Docker containers using your local daemon
+name: PHP 8.1 Ubuntu 22.04
+description: PHP 8.1 Ubuntu 22.04 with mysql
 tags: [local, docker]
 icon: /icon/docker.png
 ---
 
-# docker-with-dotfiles
-
-This is an example for deploying workspaces with a prompt for the users' dotfiles repo URI.
+# PHP 8.1 Ubuntu 22.04
 
 ## Getting started
 
-Run `coder templates init` and select this template. Follow the instructions that appear.
+Run `coder templates pull php8.1-ubuntu22.04`
 
-## How it works
+Commit any changes to git, then do `coder templates push` from the directory with `main.tf` to push the image up to Coder.
 
-During workspace creation, Coder prompts you to specify a dotfiles URL via a Terraform variable. Once the workspace starts, the Coder agent runs `coder dotfiles` via the startup script:
+# Rebuilding the image
 
-```hcl
-variable "dotfiles_uri" {
-  description = <<-EOF
-  Dotfiles repo URI (optional)
+Run `docker build -t emboldagency/php:8.1-ubuntu22.04` to build the image
 
-  see https://dotfiles.github.io
-  EOF
-    # The codercom/enterprise-* images are only built for amd64
-  default = ""
-}
-
-resource "coder_agent" "main" {
-  ...
-  startup_script = var.dotfiles_uri != "" ? "/tmp/tmp.coder*/coder dotfiles -y ${var.dotfiles_uri}" : null
-}
-```
-
-# Managing images and workspaces
-
-Refer to the documentation in the [Docker template](../docker/README.md).
-
+Run `docker push emboldagency/php8.1-ubuntu22.04` to push the image to Docker Hub
