@@ -15,6 +15,6 @@ Commit any changes to git, then do `coder templates push php81-ubuntu2204` to pu
 
 # Updating the image
 
-Run `docker build -t emboldagency/php:8.1-ubuntu22.04 ./build` to build the image
+Run `docker build -t emboldcreative/php:8.1-ubuntu22.04 ./build` to build the image
 
-Run `docker push emboldagency/php8.1-ubuntu22.04` to push the image to Docker Hub
+Run `docker push emboldcreative/php8.1-ubuntu22.04` to push the image to Docker Hub
