@@ -87,6 +87,8 @@ RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli
 
 USER embold
 
+ENV PATH="${PATH}:${GEM_HOME}/bin"
+
 HEALTHCHECK CMD curl -f http://localhost || exit 1
 
 CMD ["/bin/zsh"]
