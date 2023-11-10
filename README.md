@@ -15,6 +15,6 @@ Commit any changes to git, then do `coder templates push` from the directory wit
 
 # Rebuilding the image
 
-Run `docker build -t emboldagency/php:8.1-ubuntu22.04` to build the image
+Run `docker build -t emboldagency/php:8.1-ubuntu22.04 ./build` to build the image
 
 Run `docker push emboldagency/php8.1-ubuntu22.04` to push the image to Docker Hub
