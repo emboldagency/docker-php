@@ -1,8 +1,7 @@
 # Copy php.ini to all conf.d folders under /etc/php
 for dir in /etc/php/*/*/; do
-  echo "$dir"
   if [ -d "$dir/conf.d" ]; then
-    sudo cp -f /coder/90-embold-php.ini "$dir/conf.d" 1> /dev/null 2>& 1
+    sudo cp -f /coder/90-embold-php.ini "$dir/conf.d"
   fi
 done
 
