@@ -60,7 +60,7 @@ resource "coder_agent" "main" {
   }
   env = {
     "CODER_USERNAME"       = data.coder_workspace.me.owner
-    "CODER_WORKSPACE_PORT" = 80
+    "CODER_WORKSPACE_PORT" = 443
     "CODER_WORKSPACE_NAME" = data.coder_workspace.me.name
     "APP"                  = data.coder_workspace.me.name
     "GIT_AUTHOR_NAME"      = "${data.coder_workspace.me.owner}"
