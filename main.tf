@@ -154,6 +154,10 @@ resource "docker_container" "mysql" {
 
 resource "docker_image" "php81" {
     name          = "emboldcreative/php:8.1-ubuntu22.04"
+    build {
+        context = "./build"
+    }
+    keep_locally = true
 }
 
 resource "docker_container" "workspace" {
