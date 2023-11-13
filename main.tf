@@ -15,6 +15,10 @@ provider "coder" {
 }
 
 provider "docker" {
+  host = "unix:///var/run/docker.sock"
+  registry_auth {
+    address     = "registry-1.docker.io"
+  }
 }
 
 data "coder_provisioner" "me" {
@@ -136,11 +140,12 @@ resource "docker_network" "workspace_network" {
 resource "docker_container" "mysql" {
   name         = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}-mysql"
   image        = "mariadb:10.4"
-  restart      = "always"
+  restart      = "unless-stopped"
   hostname     = "mysql"
   network_mode = docker_network.workspace_network.name
   env = [
     "MYSQL_ROOT_PASSWORD=embold",
+    "MYSQL_DATABASE=${data.coder_workspace.me.name}",
     "MYSQL_USER=embold",
     "MYSQL_PASSWORD=embold",
   ]
@@ -151,8 +156,21 @@ resource "docker_container" "mysql" {
   }
 }
 
+resource "docker_registry_image" "php81" {
+  name = "emboldcreative/php:8.1-ubuntu22.04"
+  keep_remotely = true
+}
+
 resource "docker_image" "php81" {
-  name = "emboldagency/php:8.1-ubuntu22.04"
+  name          = data.docker_registry_image.php81.name
+  pull_triggers = [data.docker_registry_image.php81.sha256_digest]
+  keep_locally = true
+  # build {
+  #   context = "./build"
+  # }
+  # triggers = {
+  #   dir_sha1 = sha1(join("", [for f in fileset(path.module, "./build", "*") : filesha1(f)]))
+  # }
 }
 
 resource "docker_container" "workspace" {
@@ -199,7 +217,7 @@ resource "coder_app" "apache_app" {
   slug      = "webapp"
   icon      = "https://upload.wikimedia.org/wikipedia/commons/7/7e/Apache_Feather_Logo.svg"
   url       = "http://localhost:443"
-  subdomain = false
+  subdomain = true
   share     = "public"
 
   healthcheck {

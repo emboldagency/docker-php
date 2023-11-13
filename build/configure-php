@@ -4,13 +4,3 @@ for dir in /etc/php/*/*/; do
     sudo cp -f /coder/90-embold-php.ini "$dir/conf.d"
   fi
 done
-
-# Initialize mysql
-if [ ! -f "/home/embold/.mysql-initialized" ] 
-then
-  sudo sleep 10
-
-  sudo mysql -e "GRANT ALL PRIVILEGES ON * . * TO 'embold'@'%';" && \
-  sudo mysql -e "FLUSH PRIVILEGES;" && \
-  touch /home/embold/.mysql-initialized
-fi
