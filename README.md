@@ -9,11 +9,15 @@ icon: /icon/docker.png
 
 ## Getting started
 
-Run `coder templates pull php81-ubuntu2204`
+Clone the repo.
 
-Commit any changes to git, then do `coder templates push php81-ubuntu2204` to push the template up to Coder.
+Commit and push any changes to git, then do `coder templates push php81-ubuntu2204` to push the template up to Coder.
 
 # Updating the image
+
+Autobuilds are turned on in Dockerhub whenever the branch has a new commit or docker-base gets updated.
+
+If you need to build/push manually:
 
 Run `docker build -t emboldcreative/php:8.1-ubuntu22.04 ./build` to build the image
 
