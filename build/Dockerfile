@@ -3,9 +3,9 @@ FROM emboldcreative/base:ubuntu22.04
 USER root
 
 RUN add-apt-repository -y ppa:ondrej/php && \
-  add-apt-repository -y ppa:ondrej/apache2 && \
+	add-apt-repository -y ppa:ondrej/apache2 && \
 	apt-get update && \
-  apt-get install -y -q --no-install-recommends \
+	apt-get install -y -q --no-install-recommends \
 	# Ruby for capistrano/pulsar
 	ruby \
 	ruby-dev \
@@ -15,7 +15,7 @@ RUN add-apt-repository -y ppa:ondrej/php && \
 	# LAMP
 	apache2 \
 	dh-php \
-  libapache2-mod-php8.1 \
+	libapache2-mod-php8.1 \
 	mariadb-client \
 	php8.1 \
 	php8.1-bz2 \
@@ -63,27 +63,27 @@ RUN cat /coder/configure-php >> /coder/configure
 
 # Enable apache modules and configuration
 RUN a2enmod rewrite & \
-    a2enmod headers & \
-    a2enconf embold-apache2
+	a2enmod headers & \
+	a2enconf embold-apache2
 
 # Copy files needed for composer
 COPY install-composer.sh /coder/install-composer.sh 
 RUN chmod +x /coder/install-composer.sh
 
 RUN adduser embold www-data && \
-    adduser www-data embold
+	adduser www-data embold
 
 ENV GEM_HOME=/home/embold/.gems
 
 # Ruby gems
 RUN gem install bundler colorls pulsar && \
-  chown -R embold:embold $GEM_HOME && \
-  chmod -R 1777 $GEM_HOME
+	chown -R embold:embold $GEM_HOME && \
+	chmod -R 1777 $GEM_HOME
 
 # Install wp-cli
 RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
-    chmod +x wp-cli.phar && \
-    mv wp-cli.phar /usr/local/bin/wp
+	chmod +x wp-cli.phar && \
+	mv wp-cli.phar /usr/local/bin/wp
 
 USER embold
 
