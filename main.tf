@@ -15,10 +15,10 @@ provider "coder" {
 }
 
 provider "docker" {
-  host = "unix:///var/run/docker.sock"
-  registry_auth {
-    address     = "registry-1.docker.io"
-  }
+  # host = "unix:///var/run/docker.sock"
+  # registry_auth {
+  #   address     = "registry-1.docker.io"
+  # }
 }
 
 data "coder_provisioner" "me" {
@@ -67,10 +67,10 @@ resource "coder_agent" "main" {
     "CODER_WORKSPACE_PORT" = 443
     "CODER_WORKSPACE_NAME" = data.coder_workspace.me.name
     "APP"                  = data.coder_workspace.me.name
-    "GIT_AUTHOR_NAME"      = "${data.coder_workspace.me.owner}"
-    "GIT_COMMITTER_NAME"   = "${data.coder_workspace.me.owner}"
-    "GIT_AUTHOR_EMAIL"     = "${data.coder_workspace.me.owner_email}"
-    "GIT_COMMITTER_EMAIL"  = "${data.coder_workspace.me.owner_email}"
+    "GIT_AUTHOR_NAME"      = data.coder_workspace.me.owner
+    "GIT_COMMITTER_NAME"   = data.coder_workspace.me.owner
+    "GIT_AUTHOR_EMAIL"     = data.coder_workspace.me.owner_email
+    "GIT_COMMITTER_EMAIL"  = data.coder_workspace.me.owner_email
   }
   startup_script = <<-EOT
     set -e
@@ -156,15 +156,16 @@ resource "docker_container" "mysql" {
   }
 }
 
-resource "docker_registry_image" "php81" {
-  name = "emboldcreative/php:8.1-ubuntu22.04"
-  keep_remotely = true
-}
+# resource "docker_registry_image" "php81" {
+#   name = "emboldcreative/php:8.1-ubuntu22.04"
+#   keep_remotely = true
+# }
 
 resource "docker_image" "php81" {
-  name          = data.docker_registry_image.php81.name
-  pull_triggers = [data.docker_registry_image.php81.sha256_digest]
-  keep_locally = true
+  name          = "emboldcreative/php:8.1-ubuntu22.04"
+  # name          = data.docker_registry_image.php81.name
+  # pull_triggers = [data.docker_registry_image.php81.sha256_digest]
+  # keep_locally = true
   # build {
   #   context = "./build"
   # }
