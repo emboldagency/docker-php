@@ -71,9 +71,7 @@ COPY install-composer.sh /coder/install-composer.sh
 RUN chmod +x /coder/install-composer.sh
 
 RUN adduser embold www-data && \
-	adduser www-data embold
-
-ENV GEM_HOME=/home/embold/.gems
+	adduser www-data embold 
 
 # Ruby gems
 RUN mkdir -p $GEM_HOME && \
@@ -87,8 +85,6 @@ RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli
 	mv wp-cli.phar /usr/local/bin/wp
 
 USER embold
-
-ENV PATH="${PATH}:${GEM_HOME}/bin"
 
 HEALTHCHECK CMD curl -f http://localhost || exit 1
 
