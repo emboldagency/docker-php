@@ -76,7 +76,8 @@ RUN adduser embold www-data && \
 ENV GEM_HOME=/home/embold/.gems
 
 # Ruby gems
-RUN gem install bundler colorls && \
+RUN mkdir -p $GEM_HOME && \
+    gem install bundler colorls /coder/pulsar.gem && \
 	chown -R embold:embold $GEM_HOME && \
 	chmod -R 1777 $GEM_HOME
 

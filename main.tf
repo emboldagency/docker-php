@@ -201,14 +201,15 @@ resource "docker_container" "workspace" {
 
 resource "coder_app" "apache_app" {
     agent_id  = coder_agent.main.id
+    display_name = "Web App"
     slug      = "webapp"
     icon      = "https://upload.wikimedia.org/wikipedia/commons/7/7e/Apache_Feather_Logo.svg"
     url       = "http://localhost:443"
     subdomain = true
     share     = "public"
-
+    
     healthcheck {
-        url       = "http://localhost:443/"
+    url       = "http://localhost:443/"
         interval  = 10
         threshold = 30
     }
@@ -222,4 +223,32 @@ resource "coder_metadata" "container_info" {
         key   = "image"
         value = docker_image.php81.name
     }
+    item {
+        key   = "devurl"
+        value = "https://webapp--main--${data.coder_workspace.me.name}--${data.coder_workspace.me.owner}.embold.app/"
+    }
+}
+
+module "code-server" {
+    display_name = "VS Code Web"
+    source = "https://registry.coder.com/modules/code-server"
+    agent_id = coder_agent.main.id
+    folder         = "/home/embold/code/${data.coder_workspace.me.name}"
+    extensions = []
+    settings = {
+        "workbench.colorTheme": "Default Dark Modern"
+    }
+}
+
+module "jetbrains_gateway" {
+    source         = "https://registry.coder.com/modules/jetbrains-gateway"
+    agent_id       = coder_agent.main.id
+    agent_name     = data.coder_workspace.me.name
+    folder         = "/home/embold/code/${data.coder_workspace.me.name}"
+    jetbrains_ides = ["PS"]
+}
+
+module "git-commit-signing" {
+    source = "https://registry.coder.com/modules/git-commit-signing"
+    agent_id = coder_agent.main.id
 }
