@@ -1,4 +1,4 @@
-FROM emboldcreative/base:ubuntu22.04
+FROM registry.embold.app/base:ubuntu22.04
 
 USER root
 

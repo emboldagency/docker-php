@@ -154,7 +154,7 @@ resource "docker_container" "mysql" {
 }
 
 resource "docker_image" "php81" {
-    name          = "emboldcreative/php:8.1-ubuntu22.04"
+    name          = "registry.embold.app/php:8.1-ubuntu22.04"
     build {
         context = "./build"
     }
