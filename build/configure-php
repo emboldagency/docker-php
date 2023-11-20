@@ -4,3 +4,5 @@ for dir in /etc/php/*/*/; do
         sudo cp -f /coder/90-embold-php.ini "$dir/conf.d"
     fi
 done
+
+sh /coder/install-composer.sh
