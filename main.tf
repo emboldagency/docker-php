@@ -208,12 +208,6 @@ resource "coder_app" "apache_app" {
     url       = "http://localhost:443"
     subdomain = true
     share     = "public"
-    
-    healthcheck {
-    url       = "http://localhost:443/"
-        interval  = 10
-        threshold = 30
-    }
 }
 
 resource "coder_metadata" "container_info" {
