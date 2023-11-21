@@ -143,7 +143,7 @@ resource "docker_container" "mysql" {
     network_mode = docker_network.workspace_network.name
     env = [
         "MYSQL_ROOT_PASSWORD=embold",
-        "MYSQL_DATABASE=${data.coder_workspace.me.name}",
+        "MYSQL_DATABASE=${replace(data.coder_workspace.me.name, "-", "_")}",
         "MYSQL_USER=embold",
         "MYSQL_PASSWORD=embold",
     ]
