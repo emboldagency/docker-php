@@ -68,6 +68,7 @@ resource "coder_agent" "main" {
         "GIT_AUTHOR_EMAIL"     = data.coder_workspace.me.owner_email
         "GIT_COMMITTER_EMAIL"  = data.coder_workspace.me.owner_email
         "MYSQL_HOST"           = "mysql"
+        "DEVURL"               = "https://webapp--main--${data.coder_workspace.me.name}--${data.coder_workspace.me.owner}.embold.app"
     }
     startup_script = <<-EOT
         set -e
