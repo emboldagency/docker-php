@@ -28,6 +28,7 @@ resource "coder_agent" "main" {
     os                      = "linux"
     startup_script_timeout  = 180
     startup_script_behavior = "blocking"
+    startup_script_timeout  = 180
     metadata {
         display_name = "CPU Usage"
         key          = "0_cpu_usage"
@@ -59,20 +60,20 @@ resource "coder_agent" "main" {
         timeout      = 1
     }
     env = {
-        "CODER_USERNAME"       = data.coder_workspace.me.owner
-        "CODER_WORKSPACE_PORT" = 443
-        "CODER_WORKSPACE_NAME" = data.coder_workspace.me.name
         "APP"                  = data.coder_workspace.me.name
-        "GIT_AUTHOR_NAME"      = data.coder_workspace.me.owner
-        "GIT_COMMITTER_NAME"   = data.coder_workspace.me.owner
-        "GIT_AUTHOR_EMAIL"     = data.coder_workspace.me.owner_email
-        "GIT_COMMITTER_EMAIL"  = data.coder_workspace.me.owner_email
-        "MYSQL_HOST"           = "mysql"
+        "CODER_USERNAME"       = data.coder_workspace.me.owner
+        "CODER_WORKSPACE_NAME" = data.coder_workspace.me.name
+        "CODER_WORKSPACE_PORT" = 443
         "DEVURL"               = "https://webapp--main--${data.coder_workspace.me.name}--${data.coder_workspace.me.owner}.embold.app"
+        "GIT_AUTHOR_EMAIL"     = data.coder_workspace.me.owner_email
+        "GIT_AUTHOR_NAME"      = data.coder_workspace.me.owner
+        "GIT_COMMITTER_EMAIL"  = data.coder_workspace.me.owner_email
+        "GIT_COMMITTER_NAME"   = data.coder_workspace.me.owner
+        "MYSQL_HOST"           = "mysql"
     }
     startup_script = <<-EOT
         set -e
-        /bin/bash /coder/configure
+        /bin/bash /coder/scripts/configure
     EOT
 }
 
@@ -221,7 +222,7 @@ resource "coder_metadata" "container_info" {
     }
     item {
         key   = "devurl"
-        value = "https://webapp--main--${data.coder_workspace.me.name}--${data.coder_workspace.me.owner}.embold.app/"
+        value = "https://webapp--main--${data.coder_workspace.me.name}--${data.coder_workspace.me.owner}.embold.app"
     }
 }
 

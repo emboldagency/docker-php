@@ -2,6 +2,8 @@ FROM registry.embold.app/base:ubuntu22.04
 
 USER root
 
+ARG PHP_VERSION 8.1
+
 RUN add-apt-repository -y ppa:ondrej/php && \
 	add-apt-repository -y ppa:ondrej/apache2 && \
 	apt-get update && \
@@ -15,77 +17,70 @@ RUN add-apt-repository -y ppa:ondrej/php && \
 	# LAMP
 	apache2 \
 	dh-php \
-	libapache2-mod-php8.1 \
+	libapache2-mod-php${PHP_VERSION} \
 	mariadb-client \
-	php8.1 \
-	php8.1-bz2 \
-	php8.1-cgi \
-	php8.1-cli \
-	php8.1-common \
-	php8.1-curl \
-	php8.1-dev \
-	php8.1-enchant \
-	php8.1-fpm \
-	php8.1-gd \
-	php8.1-gmp \
-	php8.1-imagick \
-	php8.1-imap \
-	php8.1-interbase \
-	php8.1-intl \
-	php8.1-ldap \
-	php8.1-mbstring \
-	php8.1-mysql \
-	php8.1-odbc \
-	php8.1-opcache \
-	php8.1-pgsql \
-	php8.1-phpdbg \
-	php8.1-pspell \
-	php8.1-readline \
-	php8.1-snmp \
-	php8.1-soap \
-	php8.1-sqlite3 \
-	php8.1-sybase \
-	php8.1-tidy \
-	php8.1-xdebug \
-	php8.1-xmlrpc \
-	php8.1-xsl \
-	php8.1-zip \
+	php${PHP_VERSION} \
+	php${PHP_VERSION}-bz2 \
+	php${PHP_VERSION}-cgi \
+	php${PHP_VERSION}-cli \
+	php${PHP_VERSION}-common \
+	php${PHP_VERSION}-curl \
+	php${PHP_VERSION}-dev \
+	php${PHP_VERSION}-enchant \
+	php${PHP_VERSION}-fpm \
+	php${PHP_VERSION}-gd \
+	php${PHP_VERSION}-gmp \
+	php${PHP_VERSION}-imagick \
+	php${PHP_VERSION}-imap \
+	php${PHP_VERSION}-interbase \
+	php${PHP_VERSION}-intl \
+	php${PHP_VERSION}-ldap \
+	php${PHP_VERSION}-mbstring \
+	php${PHP_VERSION}-mysql \
+	php${PHP_VERSION}-odbc \
+	php${PHP_VERSION}-opcache \
+	php${PHP_VERSION}-pgsql \
+	php${PHP_VERSION}-phpdbg \
+	php${PHP_VERSION}-pspell \
+	php${PHP_VERSION}-readline \
+	php${PHP_VERSION}-snmp \
+	php${PHP_VERSION}-soap \
+	php${PHP_VERSION}-sqlite3 \
+	php${PHP_VERSION}-sybase \
+	php${PHP_VERSION}-tidy \
+	php${PHP_VERSION}-xdebug \
+	php${PHP_VERSION}-xmlrpc \
+	php${PHP_VERSION}-xsl \
+	php${PHP_VERSION}-zip \
 	&& rm -rf /var/lib/apt/lists/*
 
-COPY conf/90-embold-mysql-client.cnf /etc/mysql/mariadb.conf.d/90-embold-mysql-client.cnf 
-COPY conf/90-embold-php.ini /coder/90-embold-php.ini
-COPY conf/embold-apache2.conf /etc/apache2/conf-available/embold-apache2.conf 
-COPY conf/sites /etc/apache2/sites-available
-COPY configure-php /coder/configure-php
+COPY --chown=embold:embold --chmod=774 coder /coder
 
-# Combine our configure scripts
-RUN cat /coder/configure-php >> /coder/configure
-
-# Enable apache modules and configuration
-RUN a2enmod rewrite & \
-	a2enmod headers & \
-	a2enconf embold-apache2
-
-# Copy files needed for composer
-COPY install-composer.sh /coder/install-composer.sh 
-RUN chmod +x /coder/install-composer.sh
-
-RUN adduser embold www-data && \
-	adduser www-data embold 
-
-# Ruby gems
-RUN mkdir -p $GEM_HOME && \
-    gem install bundler colorls /coder/pulsar.gem && \
-	chown -R embold:embold $GEM_HOME && \
-	chmod -R 1777 $GEM_HOME
-
-# Install wp-cli
-RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
-	chmod +x wp-cli.phar && \
-	mv wp-cli.phar /usr/local/bin/wp
+RUN cd /coder \
+	&& ln -s conf/embold-mysql.cnf /etc/mysql/mysql.conf.d/embold.cnf \
+	&& ln -s conf/embold-php.ini /etc/php/${PHP_VERSION}/embold.ini \
+	&& ln -s conf/embold-mysql.cnf /etc/mysql/mysql.conf.d/embold.cnf \
+	&& ln -s conf/embold-apache.cnf /etc/apache2/conf-available/embold.cnf \
+	# Combine our configure scripts
+	&& cat scripts/configure-php >> scripts/configure \
+	# Enable apache modules and configuration
+	&& a2enmod rewrite \
+	&& a2enmod headers \
+	&& a2enconf embold \
+	&& phpenmod -v ALL -s ALL embold \
+	# Create our user
+	&& adduser embold www-data \
+	&& adduser www-data embold \
+	# Ruby gems
+	&& mkdir -p $GEM_HOME \
+	&& gem install bundler colorls /coder/pulsar.gem \
+	&& chown -R embold:embold $GEM_HOME \
+	&& chmod -R 1777 $GEM_HOME & \
+	# Install wp-cli
+	&& curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
+	&& chmod +x wp-cli.phar \
+	&& mv wp-cli.phar /usr/local/bin/wp
 
 USER embold
-
-HEALTHCHECK CMD curl -f http://localhost || exit 1
 
 CMD ["/bin/zsh"]

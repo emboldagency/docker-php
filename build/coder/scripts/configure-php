@@ -1,0 +1,3 @@
+# PHP
+
+sh /coder/scripts/install-composer.sh
