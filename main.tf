@@ -28,7 +28,6 @@ resource "coder_agent" "main" {
     os                      = "linux"
     startup_script_timeout  = 180
     startup_script_behavior = "blocking"
-    startup_script_timeout  = 180
     metadata {
         display_name = "CPU Usage"
         key          = "0_cpu_usage"
@@ -133,15 +132,16 @@ resource "docker_volume" "mysql_volume" {
 
 resource "docker_network" "workspace_network" {
     name   = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}-network"
-    driver = "bridge"
+    count = data.coder_workspace.me.start_count
 }
 
 resource "docker_container" "mysql" {
+    count = data.coder_workspace.me.start_count
     name         = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}-mysql"
     image        = "mariadb:10.4"
     restart      = "unless-stopped"
     hostname     = "mysql"
-    network_mode = docker_network.workspace_network.name
+    network_mode = docker_network.workspace_network[count.index].name
     env = [
         "MYSQL_ROOT_PASSWORD=embold",
         "MYSQL_DATABASE=${replace(data.coder_workspace.me.name, "-", "_")}",
@@ -182,7 +182,7 @@ resource "docker_container" "workspace" {
         volume_name    = docker_volume.home_volume.name
         read_only      = false
     }
-    network_mode = docker_network.workspace_network.name
+    network_mode = docker_network.workspace_network[count.index].name
     # Add labels in Docker to keep track of orphan resources.
     labels {
         label = "coder.owner"
