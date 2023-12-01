@@ -80,7 +80,7 @@ resource "coder_agent" "main" {
     EOT
 }
 
-resource "docker_volume" "home_volume" {
+resource "docker_volume" "home" {
     name = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}-${data.coder_workspace.me.id}-home"
     # Protect the volume from being deleted due to changes in attributes.
     lifecycle {
@@ -107,7 +107,7 @@ resource "docker_volume" "home_volume" {
     }
 }
 
-resource "docker_volume" "db_volume" {
+resource "docker_volume" "db" {
     name = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}-${data.coder_workspace.me.id}-mysql"
     # Protect the volume from being deleted due to changes in attributes.
     lifecycle {
@@ -134,7 +134,7 @@ resource "docker_volume" "db_volume" {
     }
 }
 
-resource "docker_network" "workspace_network" {
+resource "docker_network" "workspace" {
     name  = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}-network"
     count = data.coder_workspace.me.start_count
 }
@@ -144,7 +144,7 @@ resource "docker_container" "db" {
     name         = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}-mysql"
     image        = "mariadb:10.4"
     hostname     = "mysql"
-    network_mode = docker_network.workspace_network[count.index].name
+    network_mode = docker_network.workspace[count.index].name
     env = [
         "MYSQL_ROOT_PASSWORD=embold",
         "MYSQL_DATABASE=${replace(data.coder_workspace.me.name, "-", "_")}",
@@ -182,10 +182,10 @@ resource "docker_container" "workspace" {
     }
     volumes {
         container_path = "/home/embold"
-        volume_name    = docker_volume.home_volume.name
+        volume_name    = docker_volume.home.name
         read_only      = false
     }
-    network_mode = docker_network.workspace_network[count.index].name
+    network_mode = docker_network.workspace[count.index].name
     # Add labels in Docker to keep track of orphan resources.
     labels {
         label = "coder.owner"
