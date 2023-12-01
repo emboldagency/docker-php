@@ -80,7 +80,7 @@ resource "coder_agent" "main" {
     EOT
 }
 
-resource "docker_volume" "home" {
+resource "docker_volume" "home_volume" {
     name = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}-${data.coder_workspace.me.id}-home"
     # Protect the volume from being deleted due to changes in attributes.
     lifecycle {
@@ -107,7 +107,7 @@ resource "docker_volume" "home" {
     }
 }
 
-resource "docker_volume" "db" {
+resource "docker_volume" "mysql_volume" {
     name = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}-${data.coder_workspace.me.id}-mysql"
     # Protect the volume from being deleted due to changes in attributes.
     lifecycle {
@@ -139,7 +139,7 @@ resource "docker_network" "workspace" {
     count = data.coder_workspace.me.start_count
 }
 
-resource "docker_container" "db" {
+resource "docker_container" "mysql" {
     count        = data.coder_workspace.me.start_count
     name         = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}-mysql"
     image        = "mariadb:10.4"
@@ -153,7 +153,7 @@ resource "docker_container" "db" {
     ]
     volumes {
         container_path = "/var/lib/mysql"
-        volume_name    = docker_volume.db.name
+        volume_name    = docker_volume.mysql_volume.name
         read_only      = false
     }
 }
@@ -182,7 +182,7 @@ resource "docker_container" "workspace" {
     }
     volumes {
         container_path = "/home/embold"
-        volume_name    = docker_volume.home.name
+        volume_name    = docker_volume.home_volume.name
         read_only      = false
     }
     network_mode = docker_network.workspace[count.index].name
