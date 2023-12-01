@@ -23,6 +23,10 @@ data "coder_provisioner" "me" {
 data "coder_workspace" "me" {
 }
 
+locals {
+    devurl = "https://webapp--main--${data.coder_workspace.me.name}--${data.coder_workspace.me.owner}.embold.app"
+}
+
 resource "coder_agent" "main" {
     arch                    = data.coder_provisioner.me.arch
     os                      = "linux"
@@ -63,7 +67,7 @@ resource "coder_agent" "main" {
         "CODER_USERNAME"       = data.coder_workspace.me.owner
         "CODER_WORKSPACE_NAME" = data.coder_workspace.me.name
         "CODER_WORKSPACE_PORT" = 443
-        "DEVURL"               = "https://webapp--main--${data.coder_workspace.me.name}--${data.coder_workspace.me.owner}.embold.app"
+        "DEVURL"               = "${local.devurl}"
         "GIT_AUTHOR_EMAIL"     = data.coder_workspace.me.owner_email
         "GIT_AUTHOR_NAME"      = data.coder_workspace.me.owner
         "GIT_COMMITTER_EMAIL"  = data.coder_workspace.me.owner_email
@@ -103,7 +107,7 @@ resource "docker_volume" "home_volume" {
     }
 }
 
-resource "docker_volume" "mysql_volume" {
+resource "docker_volume" "db_volume" {
     name = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}-${data.coder_workspace.me.id}-mysql"
     # Protect the volume from being deleted due to changes in attributes.
     lifecycle {
@@ -131,15 +135,14 @@ resource "docker_volume" "mysql_volume" {
 }
 
 resource "docker_network" "workspace_network" {
-    name   = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}-network"
+    name  = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}-network"
     count = data.coder_workspace.me.start_count
 }
 
-resource "docker_container" "mysql" {
-    count = data.coder_workspace.me.start_count
+resource "docker_container" "db" {
+    count        = data.coder_workspace.me.start_count
     name         = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}-mysql"
     image        = "mariadb:10.4"
-    restart      = "unless-stopped"
     hostname     = "mysql"
     network_mode = docker_network.workspace_network[count.index].name
     env = [
@@ -150,22 +153,22 @@ resource "docker_container" "mysql" {
     ]
     volumes {
         container_path = "/var/lib/mysql"
-        volume_name    = docker_volume.mysql_volume.name
+        volume_name    = docker_volume.db.name
         read_only      = false
     }
 }
 
-resource "docker_image" "php81" {
-    name          = "registry.embold.app/php:8.1-ubuntu22.04"
+resource "docker_image" "php" {
+    name         = "registry.embold.app/php:8.1-ubuntu22.04"
+    keep_locally = true
     build {
         context = "./build"
     }
-    keep_locally = true
 }
 
 resource "docker_container" "workspace" {
     count = data.coder_workspace.me.start_count
-    image = docker_image.php81.name
+    image = docker_image.php.name
     # Uses lower() to avoid Docker restriction on container names.
     name = "coder-${data.coder_workspace.me.owner}-${lower(data.coder_workspace.me.name)}"
     # Hostname makes the shell more user friendly: coder@my-workspace:~$
@@ -202,11 +205,11 @@ resource "docker_container" "workspace" {
     }
 }
 
-resource "coder_app" "apache_app" {
+resource "coder_app" "web_app" {
     agent_id  = coder_agent.main.id
     display_name = "Web App"
     slug      = "webapp"
-    icon      = "https://upload.wikimedia.org/wikipedia/commons/7/7e/Apache_Feather_Logo.svg"
+    icon      = "/emojis/1f310.png"
     url       = "http://localhost:443"
     subdomain = true
     share     = "public"
@@ -218,11 +221,11 @@ resource "coder_metadata" "container_info" {
 
     item {
         key   = "image"
-        value = docker_image.php81.name
+        value = docker_image.php.name
     }
     item {
         key   = "devurl"
-        value = "https://webapp--main--${data.coder_workspace.me.name}--${data.coder_workspace.me.owner}.embold.app"
+        value = "${local.devurl}"
     }
 }
 

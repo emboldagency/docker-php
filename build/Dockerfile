@@ -2,7 +2,7 @@ FROM registry.embold.app/base:ubuntu22.04
 
 USER root
 
-ARG PHP_VERSION 8.1
+ARG PHP_VERSION=8.1
 
 RUN add-apt-repository -y ppa:ondrej/php && \
 	add-apt-repository -y ppa:ondrej/apache2 && \
@@ -57,10 +57,9 @@ RUN add-apt-repository -y ppa:ondrej/php && \
 COPY --chown=embold:embold --chmod=774 coder /coder
 
 RUN cd /coder \
-	&& ln -s conf/embold-mysql.cnf /etc/mysql/mysql.conf.d/embold.cnf \
+	&& ln -s conf/embold-mysql.cnf /etc/mysql/conf.d/embold.cnf \
 	&& ln -s conf/embold-php.ini /etc/php/${PHP_VERSION}/embold.ini \
-	&& ln -s conf/embold-mysql.cnf /etc/mysql/mysql.conf.d/embold.cnf \
-	&& ln -s conf/embold-apache.cnf /etc/apache2/conf-available/embold.cnf \
+	&& cp conf/embold-apache.conf /etc/apache2/conf-available/embold.conf \
 	# Combine our configure scripts
 	&& cat scripts/configure-php >> scripts/configure \
 	# Enable apache modules and configuration
@@ -75,7 +74,7 @@ RUN cd /coder \
 	&& mkdir -p $GEM_HOME \
 	&& gem install bundler colorls /coder/pulsar.gem \
 	&& chown -R embold:embold $GEM_HOME \
-	&& chmod -R 1777 $GEM_HOME & \
+	&& chmod -R 1777 $GEM_HOME \
 	# Install wp-cli
 	&& curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
 	&& chmod +x wp-cli.phar \
