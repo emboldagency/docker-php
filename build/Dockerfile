@@ -57,10 +57,10 @@ RUN add-apt-repository -y ppa:ondrej/php && \
 COPY --chown=embold:embold --chmod=774 coder /coder
 
 RUN cd /coder \
-	&& ln -s conf/embold-mysql.cnf /etc/mysql/conf.d/embold.cnf \
-	&& ln -s conf/embold-php.ini /etc/php/${PHP_VERSION}/mods-available/embold.ini \
+	&& ln -s /coder/conf/embold-mysql.cnf /etc/mysql/conf.d/embold.cnf \
+	&& ln -s /coder/conf/embold-php.ini /etc/php/${PHP_VERSION}/mods-available/embold.ini \
 	&& cp conf/embold-apache.conf /etc/apache2/conf-available/embold.conf \
-	&& rsync -a --delete /coder/conf/sites-available/ /etc/apache2/sites-available \
+	&& rsync -a --delete conf/sites-available/ /etc/apache2/sites-available \
 	# Combine our configure scripts
 	&& cat scripts/configure-php >> scripts/configure \
 	# Enable apache modules and configuration
