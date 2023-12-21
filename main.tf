@@ -15,9 +15,6 @@ provider "coder" {
 }
 
 provider "docker" {
-  registry_auth {
-    address = "registry.embold.app"
-  }
 }
 
 data "coder_provisioner" "me" {
@@ -37,6 +34,11 @@ data "coder_parameter" "php_version" {
   type        = "string"
   default     = "8.1"
   mutable     = true
+
+  option {
+    name  = "8.3"
+    value = "8.3"
+  }
 
   option {
     name  = "8.2"
@@ -99,7 +101,7 @@ resource "coder_agent" "main" {
     "CODER_USERNAME"       = data.coder_workspace.me.owner
     "CODER_WORKSPACE_NAME" = data.coder_workspace.me.name
     "CODER_WORKSPACE_PORT" = 443
-    "DEVURL"               = "${local.devurl}"
+    "DEVURL"               = local.devurl
     "GIT_AUTHOR_EMAIL"     = data.coder_workspace.me.owner_email
     "GIT_AUTHOR_NAME"      = data.coder_workspace.me.owner
     "GIT_COMMITTER_EMAIL"  = data.coder_workspace.me.owner_email
@@ -190,20 +192,20 @@ resource "docker_container" "mysql" {
   }
 }
 
-data "docker_registry_image" "php" {
-  name = "registry.embold.app/php:${data.coder_parameter.php_version.value}-ubuntu22.04"
-}
-
 resource "docker_image" "php" {
-  name         = data.docker_registry_image.php.name
+  name         = "registry.embold.app/php:${data.coder_parameter.php_version.value}-ubuntu22.04-wip"
   keep_locally = true
-  # build {
-  #   context = "./build"
-  # }
-  # triggers = {
-  #   dir_sha1 = sha1(join("", [for f in fileset(path.module, "build/**/*") : filesha1(f)]))
-  # }
-  pull_triggers = [data.docker_registry_image.php.sha256_digest]
+  build {
+    context = "./build"
+    tag     = ["registry.embold.app/php:${data.coder_parameter.php_version.value}-ubuntu22.04-wip"]
+    build_args = {
+      PHP_VERSION : data.coder_parameter.php_version.value
+    }
+    target = "final"
+  }
+  triggers = {
+    dir_sha1 = sha1(join("", [for f in fileset(path.module, "build/**/*") : filesha1(f)]))
+  }
 }
 
 resource "docker_container" "workspace" {
