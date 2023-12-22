@@ -11,7 +11,7 @@ icon: /icon/docker.png
 
 Clone the repo.
 
-Commit and push any changes to git, then do `coder templates push php81-ubuntu2204` to push the template up to Coder.
+Commit and push any changes to git, then do `coder templates push php-ubuntu2204` to push the template up to Coder.
 
 # Updating the image
 
