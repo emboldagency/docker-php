@@ -24,7 +24,8 @@ data "coder_workspace" "me" {
 }
 
 locals {
-  devurl = "https://webapp--main--${data.coder_workspace.me.name}--${data.coder_workspace.me.owner}.embold.app"
+  dev_url    = "https://webapp--main--${data.coder_workspace.me.name}--${data.coder_workspace.me.owner}.embold.app"
+  code_root = "/home/embold/code/${data.coder_workspace.me.name}"
 }
 
 data "coder_parameter" "php_version" {
@@ -101,7 +102,7 @@ resource "coder_agent" "main" {
     "CODER_USERNAME"       = data.coder_workspace.me.owner
     "CODER_WORKSPACE_NAME" = data.coder_workspace.me.name
     "CODER_WORKSPACE_PORT" = 443
-    "DEVURL"               = local.devurl
+    "DEVURL"               = local.dev_url
     "GIT_AUTHOR_EMAIL"     = data.coder_workspace.me.owner_email
     "GIT_AUTHOR_NAME"      = data.coder_workspace.me.owner
     "GIT_COMMITTER_EMAIL"  = data.coder_workspace.me.owner_email
@@ -193,11 +194,11 @@ resource "docker_container" "mysql" {
 }
 
 resource "docker_image" "php" {
-  name         = "registry.embold.app/php:${data.coder_parameter.php_version.value}-ubuntu22.04-wip"
+  name         = "registry.embold.app/php:${data.coder_parameter.php_version.value}-ubuntu22.04"
   keep_locally = true
   build {
     context = "./build"
-    tag     = ["registry.embold.app/php:${data.coder_parameter.php_version.value}-ubuntu22.04-wip"]
+    tag     = ["registry.embold.app/php:${data.coder_parameter.php_version.value}-ubuntu22.04"]
     build_args = {
       PHP_VERSION : data.coder_parameter.php_version.value
     }
@@ -266,8 +267,12 @@ resource "coder_metadata" "container_info" {
     value = docker_image.php.name
   }
   item {
-    key   = "devurl"
-    value = local.devurl
+    key   = "dev_url"
+    value = local.dev_url
+  }
+  item {
+    key   = "php_version"
+    value = data.coder_parameter.php_version.value
   }
 }
 
@@ -275,7 +280,7 @@ module "code-server" {
   display_name = "VS Code Web"
   source       = "https://registry.coder.com/modules/code-server"
   agent_id     = coder_agent.main.id
-  folder       = "/home/embold/code/${data.coder_workspace.me.name}"
+  folder       = local.code_root
   extensions   = []
   settings = {
     "workbench.colorTheme" : "Default Dark Modern"
@@ -286,6 +291,7 @@ module "jetbrains_gateway" {
   source         = "https://registry.coder.com/modules/jetbrains-gateway"
   agent_id       = coder_agent.main.id
   agent_name     = data.coder_workspace.me.name
-  folder         = "/home/embold/code/${data.coder_workspace.me.name}"
+  folder         = local.code_root
   jetbrains_ides = ["PS"]
+  default        = "PS"
 }
