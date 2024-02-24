@@ -17,8 +17,8 @@ Commit and push any changes to git, then do `coder templates push php-ubuntu2204
 
 The docker image should build automatically at startup if there are any changes.
 
-If you need to build/push manually:
+If you need to build/push manually, replace PHP_VERSION in the following commands:
 
-Run `docker build -t registry.embold.app/php:${PHP_VERSION}-ubuntu22.04 ./build` to build the image
+Run `PHP_VERSION=8.1 docker build -t registry.embold.dev/php:${PHP_VERSION}-ubuntu22.04 ./build` to build the image
 
-Run `docker push registry.embold.app/php${PHP_VERSION}-ubuntu22.04` to push the image to Docker Hub
+Run `PHP_VERSION=8.1 docker push registry.embold.dev/php${PHP_VERSION}-ubuntu22.04` to push the image to the registry

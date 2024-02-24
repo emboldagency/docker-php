@@ -1,6 +1,6 @@
 ARG PHP_VERSION
 
-FROM registry.embold.app/base:ubuntu22.04 as base
+FROM registry.embold.dev/base:ubuntu22.04 as base
 
 ARG PHP_VERSION
 

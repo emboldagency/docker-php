@@ -24,7 +24,7 @@ data "coder_workspace" "me" {
 }
 
 locals {
-  dev_url    = "https://webapp--main--${data.coder_workspace.me.name}--${data.coder_workspace.me.owner}.embold.app"
+  dev_url    = "https://webapp--main--${data.coder_workspace.me.name}--${data.coder_workspace.me.owner}.embold.dev"
   code_root = "/home/embold/code/${data.coder_workspace.me.name}"
 }
 
@@ -65,7 +65,6 @@ data "coder_parameter" "php_version" {
 resource "coder_agent" "main" {
   arch                    = data.coder_provisioner.me.arch
   os                      = "linux"
-  startup_script_timeout  = 180
   startup_script_behavior = "blocking"
   metadata {
     display_name = "CPU Usage"
@@ -194,11 +193,11 @@ resource "docker_container" "mysql" {
 }
 
 resource "docker_image" "php" {
-  name         = "registry.embold.app/php:${data.coder_parameter.php_version.value}-ubuntu22.04"
+  name         = "registry.embold.dev/php:${data.coder_parameter.php_version.value}-ubuntu22.04"
   keep_locally = true
   build {
     context = "./build"
-    tag     = ["registry.embold.app/php:${data.coder_parameter.php_version.value}-ubuntu22.04"]
+    tag     = ["registry.embold.dev/php:${data.coder_parameter.php_version.value}-ubuntu22.04"]
     build_args = {
       PHP_VERSION : data.coder_parameter.php_version.value
     }
