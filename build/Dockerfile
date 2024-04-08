@@ -1,21 +1,26 @@
-ARG PHP_VERSION
+ARG UBUNTU_VERSION=22.04 \ 
+    PHP_VERSION=8.1 \
+    RUBY_VERSION=3.3.0
 
-FROM registry.embold.dev/base:ubuntu22.04 as base
+FROM emboldcreative/base:ubuntu${UBUNTU_VERSION} as base
 
-ARG PHP_VERSION
+ARG PHP_VERSION \
+    RUBY_VERSION
+
+ENV BUNDLE_APP_CONFIG=/home/embold/.gems/${RUBY_VERSION} \
+    GEM_HOME=/home/embold/.gems/${RUBY_VERSION} \
+    PATH=$PATH:/home/embold/.gems/${RUBY_VERSION}/bin
 
 USER root
+
+RUN ruby-build ${RUBY_VERSION} /usr/local \
+    && gem update --system \
+    && chown -R embold:embold /home/embold/.gems
 
 RUN add-apt-repository -y ppa:ondrej/php && \
     add-apt-repository -y ppa:ondrej/apache2 && \
     apt-get update && \
     apt-get install -y -q --no-install-recommends \
-    # Ruby for capistrano/pulsar
-    ruby \
-    ruby-dev \
-    ruby-irb \
-    ruby-rake \
-    ruby-bigdecimal \
     # LAMP
     apache2 \
     dh-php \
@@ -89,6 +94,7 @@ RUN cd /coder \
     && ln -s /coder/conf/embold-mysql.cnf /etc/mysql/conf.d/embold.cnf \
     && ln -s /coder/conf/embold-php.ini /etc/php/${PHP_VERSION}/mods-available/embold.ini \
     && cp conf/embold-apache.conf /etc/apache2/conf-available/embold.conf \
+    && cp conf/apache-envvars /etc/apache2/envvars \
     && rsync -a --delete conf/sites-available/ /etc/apache2/sites-available \
     # Combine our configure scripts
     && cat scripts/configure-php >> scripts/configure \
@@ -100,16 +106,14 @@ RUN cd /coder \
     # Create our user
     && adduser embold www-data \
     && adduser www-data embold \
-    # Ruby gems
-    && mkdir -p $GEM_HOME \
-    && gem install bundler colorls /coder/pulsar.gem \
-    && chown -R embold:embold $GEM_HOME \
-    && chmod -R 1777 $GEM_HOME \
     # Install wp-cli
     && curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
     && chmod +x wp-cli.phar \
     && mv wp-cli.phar /usr/local/bin/wp
 
 USER embold
+
+RUN mkdir -p $GEM_HOME \
+    && gem install colorls /coder/pulsar-*.gem --conservative
 
 CMD ["/bin/zsh"]
