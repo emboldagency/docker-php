@@ -74,11 +74,6 @@ data "coder_parameter" "php_version" {
     name  = "7.4"
     value = "7.4"
   }
-
-  option {
-    name  = "7.3"
-    value = "7.3"
-  }
 }
 
 data "coder_parameter" "mariadb_version" {
@@ -232,7 +227,7 @@ resource "docker_container" "workspace" {
   hostname = data.coder_workspace.me.name
   # Use the docker gateway if the access URL is 127.0.0.1
   entrypoint = ["sh", "-c", replace(coder_agent.main.init_script, "/localhost|127\\.0\\.0\\.1/", "host.docker.internal")]
-  env        = [
+  env = [
     "CODER_AGENT_TOKEN=${coder_agent.main.token}",
     "HOSTNAME=${local.app}",
     "MYSQL_HOST=mysql",
