@@ -44,7 +44,7 @@ data "coder_parameter" "pulsar_app_name" {
   icon        = "/icon/coder.svg"
   type        = "string"
   default     = ""
-  mutable     = false
+  mutable     = true
 }
 
 data "coder_parameter" "php_version" {
