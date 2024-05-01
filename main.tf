@@ -102,11 +102,6 @@ data "coder_parameter" "ubuntu_version" {
     name  = "22.04 LTS (Jammy)"
     value = "22.04"
   }
-
-  option {
-    name  = "20.04 LTS (Focal)"
-    value = "20.04"
-  }
 }
 
 resource "coder_agent" "main" {
