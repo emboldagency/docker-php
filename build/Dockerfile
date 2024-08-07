@@ -82,6 +82,11 @@ FROM base as php8.1
 
 FROM base as php8.2
 
+RUN apt-get update \
+    && apt-get install -y \
+    php8.2-bcmath \
+    && rm -rf /var/lib/apt/lists/*
+
 FROM base as php8.3
 
 RUN apt-get update \
