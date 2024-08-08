@@ -1,4 +1,5 @@
 <!-- markdownlint-disable MD024 -->
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
@@ -9,7 +10,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 [What's this section for?](https://keepachangelog.com/en/1.1.0/#effort)
 
-<!-- ### Added  -->
+### Added
+
+- GitHub Actions workflows to push to DockerHub & publish the Coder template
 
 ### Changed
 

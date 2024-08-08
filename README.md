@@ -7,20 +7,22 @@ icon: /icon/docker.png
 
 # PHP
 
-## Getting started
+# Build Process
 
-Clone the repo.
+## Automated Builds
 
-Commit and push any changes to git, then do `coder templates push php` to push the template up to Coder.
+GitHub Actions is configured to automatically build the base images and push the updated templates to Coder when a new version tag is created on GitHub.
 
-# Updating the image
+New tags will be pushed for each of the versions specified in the [docker-build workflow folder](.github/workflows)
 
-```
+## Manual Builds
+
+```bash
 # Set the base image version
-export UBUNTU_VERSION=22.04
+export UBUNTU_VERSION=24.04
 
 # Set the ruby version
-export PHP_VERSION=8.1
+export PHP_VERSION=8.3
 
 # Build the image
 docker build -t emboldcreative/php:${PHP_VERSION}-ubuntu${UBUNTU_VERSION} --build-arg UBUNTU_VERSION=${UBUNTU_VERSION} --build-arg PHP_VERSION=${PHP_VERSION} ./build
@@ -28,3 +30,11 @@ docker build -t emboldcreative/php:${PHP_VERSION}-ubuntu${UBUNTU_VERSION} --buil
 # Push the image to the registry
 docker push emboldcreative/php:${PHP_VERSION}-ubuntu${UBUNTU_VERSION}
 ```
+
+## Coder Template Updates
+
+The updated template will be published automatically when a new version tag is created on GitHub.
+
+### Manual Template Updates
+
+Commit and push any changes to git, then do `coder templates push php` to push the template up to Coder.

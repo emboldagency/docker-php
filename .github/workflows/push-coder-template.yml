@@ -1,0 +1,24 @@
+name: Push Coder Template
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  update-template:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install Coder CLI
+        run: |
+          curl -fsSL https://coder.com/install.sh | sh
+
+      - name: Log in to Coder
+        run: coder login --token ${{ secrets.CODER_TOKEN }} --url https://embold.dev
+
+      - name: Push PHP Template
+        run: coder template push php
