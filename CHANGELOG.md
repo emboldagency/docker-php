@@ -3,17 +3,29 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org).
 
 ## [Unreleased]
 
 [What's this section for?](https://keepachangelog.com/en/1.1.0/#effort)
 
+<!-- ### Added  -->
+
 ### Changed
 
-- Updated Coder Provider
+- Updated Coder provider
+- Updated default parameter versions
 
-## [v1.1](https://github.com/emboldagency/docker-php/tree/v1.1) - 2024-04-08
+<!-- ### Deprecated -->
+
+<!-- ### Removed -->
+
+<!-- ### Fixed -->
+
+<!-- ### Security -->
+
+
+## [v1.1.0](https://github.com/emboldagency/docker-php/tree/v1.1.0) - 2024-04-08
 
 Added dynamic template options to customize the workspace.
 
@@ -37,6 +49,6 @@ Added dynamic template options to customize the workspace.
 - Move gem home creation and gem install code into base
 - Use system locale for apache
 
-## [1.0] - 2023-11-17
+## [v1.0.0] - 2023-11-17
 
 Initial release

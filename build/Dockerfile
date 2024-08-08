@@ -1,5 +1,5 @@
-ARG UBUNTU_VERSION=22.04 \ 
-    PHP_VERSION=8.1 \
+ARG UBUNTU_VERSION=24.04 \ 
+    PHP_VERSION=8.3 \
     RUBY_VERSION=3.3.0
 
 FROM emboldcreative/base:ubuntu${UBUNTU_VERSION} as base

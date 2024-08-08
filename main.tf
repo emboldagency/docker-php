@@ -49,59 +49,29 @@ data "coder_parameter" "pulsar_app_name" {
 
 data "coder_parameter" "php_version" {
   name        = "PHP Version"
-  description = "Which version of PHP?"
+  description = "Which version of PHP? Must match a emboldcreative/php image tag on DockerHub"
   icon        = "/icon/php.svg"
   type        = "string"
-  default     = "8.1"
+  default     = "8.3"
   mutable     = true
-
-  option {
-    name  = "8.3"
-    value = "8.3"
-  }
-
-  option {
-    name  = "8.2"
-    value = "8.2"
-  }
-
-  option {
-    name  = "8.1"
-    value = "8.1"
-  }
-
-  option {
-    name  = "7.4"
-    value = "7.4"
-  }
 }
 
 data "coder_parameter" "mariadb_version" {
   name        = "MariaDB Version"
-  description = "What version of MariaDB is the database? Should match a DockerHub tag for the MariaDB image"
+  description = "What version of MariaDB? Must match an official mariadb image tag on DockerHub"
   icon        = "/icon/database.svg"
   type        = "string"
-  default     = "10.4"
+  default     = "10.11"
   mutable     = true
 }
 
 data "coder_parameter" "ubuntu_version" {
   name        = "Ubuntu Version"
-  description = "Which version of Ubuntu?"
+  description = "Which version of Ubuntu? Must match a emboldcreative/base image tag on DockerHub"
   icon        = "/icon/ubuntu.svg"
   type        = "string"
-  default     = "22.04"
+  default     = "24.04"
   mutable     = true
-
-  # option {
-  #   name  = "24.04 LTS (Noble)"
-  #   value = "24.04"
-  # }
-
-  option {
-    name  = "22.04 LTS (Jammy)"
-    value = "22.04"
-  }
 }
 
 resource "coder_agent" "main" {
@@ -214,13 +184,10 @@ resource "docker_image" "php" {
 }
 
 resource "docker_container" "workspace" {
-  count = data.coder_workspace.me.start_count
-  image = docker_image.php.name
-  # Uses lower() to avoid Docker restriction on container names.
-  name = "coder-${data.coder_workspace.me.owner}-${lower(data.coder_workspace.me.name)}"
-  # Hostname makes the shell more user friendly: coder@my-workspace:~$
-  hostname = data.coder_workspace.me.name
-  # Use the docker gateway if the access URL is 127.0.0.1
+  count      = data.coder_workspace.me.start_count
+  image      = docker_image.php.name
+  name       = "coder-${data.coder_workspace.me.owner}-${lower(data.coder_workspace.me.name)}"
+  hostname   = data.coder_workspace.me.name
   entrypoint = ["sh", "-c", replace(coder_agent.main.init_script, "/localhost|127\\.0\\.0\\.1/", "host.docker.internal")]
   env = [
     "CODER_AGENT_TOKEN=${coder_agent.main.token}",
