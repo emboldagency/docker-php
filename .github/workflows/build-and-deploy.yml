@@ -18,9 +18,9 @@ jobs:
         id: set-skip-build-and-push-docker
         run: |
           if [[ "${{ github.event.inputs['skip-jobs'] }}" == *"build-and-push-docker"* ]]; then
-            echo "::set-output name=skip::true"
+            echo "skip=true" >> $GITHUB_ENV
           else
-            echo "::set-output name=skip::false"
+            echo "skip=false" >> $GITHUB_ENV
           fi
 
   build-and-push-docker:
@@ -83,4 +83,4 @@ jobs:
         run: coder login --token ${{ secrets.CODER_TOKEN }} --url https://embold.dev
 
       - name: Push PHP Template
-        run: coder template push --yes php
+        run: coder templates push --yes php

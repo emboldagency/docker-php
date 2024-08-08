@@ -11,9 +11,6 @@ terraform {
   }
 }
 
-provider "coder" {
-}
-
 provider "docker" {
   registry_auth {
     address  = "registry-1.docker.io"
@@ -22,16 +19,29 @@ provider "docker" {
   }
 }
 
-data "coder_provisioner" "me" {
-}
+data "coder_provisioner" "me" {}
 
-data "coder_workspace" "me" {
-}
+data "coder_workspace" "me" {}
+
+data "coder_workspace_owner" "me" {}
+
 
 locals {
-  devurl  = "https://webapp--main--${lower(data.coder_workspace.me.name)}--${lower(data.coder_workspace.me.owner)}.embold.dev"
-  app     = try(length(data.coder_parameter.pulsar_app_name.value), 0) > 0 ? lower(data.coder_parameter.pulsar_app_name.value) : lower(data.coder_workspace.me.name)
-  db_name = replace(local.app, "-", "_")
+  app                   = lower(try(length(local.pulsar_app_name), 0) > 0 ? local.pulsar_app_name : local.workspace_name)
+  db_name               = replace(local.app, "-", "_")
+  dev_url                = "https://webapp--main--${local.workspace_name}--${local.user_username}.embold.dev"
+  mariadb_version       = data.coder_parameter.mariadb_version.value
+  network_mode          = docker_network.workspace[count.index].name
+  php_version           = data.coder_parameter.php_version.value
+  pulsar_app_name       = data.coder_parameter.pulsar_app_name.value
+  ubuntu_version        = data.coder_parameter.ubuntu_version.value
+  user_email            = data.coder_workspace_owner.me.email
+  user_full_name        = coalesce(data.coder_workspace_owner.me.full_name, local.user_username)
+  user_id               = data.coder_workspace_owner.id
+  user_username         = lower(data.coder_workspace_owner.me.name)
+  workspace_id          = data.coder_workspace.me.id
+  workspace_name        = lower(data.coder_workspace.me.name)
+  workspace_start_count = data.coder_workspace.me.start_count
 }
 
 variable "DOCKER_REGISTRY_PASS" {
@@ -79,15 +89,15 @@ resource "coder_agent" "main" {
   os                      = "linux"
   startup_script_behavior = "blocking"
   env = {
-    "APP"                  = local.app
-    "CODER_USERNAME"       = data.coder_workspace.me.owner
-    "CODER_WORKSPACE_NAME" = data.coder_workspace.me.name
-    "CODER_WORKSPACE_PORT" = 443
-    "DEVURL"               = local.devurl
-    "GIT_AUTHOR_EMAIL"     = data.coder_workspace.me.owner_email
-    "GIT_AUTHOR_NAME"      = data.coder_workspace.me.owner
-    "GIT_COMMITTER_EMAIL"  = data.coder_workspace.me.owner_email
-    "GIT_COMMITTER_NAME"   = data.coder_workspace.me.owner
+    APP                  = local.app
+    CODER_USERNAME       = local.user_username
+    CODER_WORKSPACE_NAME = local.workspace_name
+    CODER_WORKSPACE_PORT = 443
+    DEVURL               = local.dev_url
+    GIT_AUTHOR_NAME      = local.user_full_name
+    GIT_AUTHOR_EMAIL     = local.user_email
+    GIT_COMMITTER_NAME   = local.user_full_name
+    GIT_COMMITTER_EMAIL  = local.user_email
   }
   startup_script = <<-EOT
         set -e
@@ -96,7 +106,7 @@ resource "coder_agent" "main" {
 }
 
 resource "docker_volume" "home_volume" {
-  name = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}-${data.coder_workspace.me.id}-home"
+  name = "coder-${local.user_username}-${local.workspace_name}-${local.workspace_id}-home"
   # Protect the volume from being deleted due to changes in attributes.
   lifecycle {
     ignore_changes = all
@@ -104,26 +114,26 @@ resource "docker_volume" "home_volume" {
   # Add labels in Docker to keep track of orphan resources.
   labels {
     label = "coder.owner"
-    value = data.coder_workspace.me.owner
+    value = local.user_username
   }
   labels {
     label = "coder.owner_id"
-    value = data.coder_workspace.me.owner_id
+    value = local.user_id
   }
   labels {
     label = "coder.workspace_id"
-    value = data.coder_workspace.me.id
+    value = local.workspace_id
   }
   # This field becomes outdated if the workspace is renamed but can
   # be useful for debugging or cleaning out dangling volumes.
   labels {
     label = "coder.workspace_name_at_creation"
-    value = data.coder_workspace.me.name
+    value = local.workspace_name
   }
 }
 
 resource "docker_volume" "mysql_volume" {
-  name = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}-${data.coder_workspace.me.id}-mysql"
+  name = "coder-${local.user_username}-${local.workspace_name}-${local.workspace_id}-mysql"
   # Protect the volume from being deleted due to changes in attributes.
   lifecycle {
     ignore_changes = all
@@ -131,35 +141,35 @@ resource "docker_volume" "mysql_volume" {
   # Add labels in Docker to keep track of orphan resources.
   labels {
     label = "coder.owner"
-    value = data.coder_workspace.me.owner
+    value = local.user_username
   }
   labels {
     label = "coder.owner_id"
-    value = data.coder_workspace.me.owner_id
+    value = local.user_id
   }
   labels {
     label = "coder.workspace_id"
-    value = data.coder_workspace.me.id
+    value = local.workspace_id
   }
   # This field becomes outdated if the workspace is renamed but can
   # be useful for debugging or cleaning out dangling volumes.
   labels {
     label = "coder.workspace_name_at_creation"
-    value = data.coder_workspace.me.name
+    value = local.workspace_name
   }
 }
 
 resource "docker_network" "workspace" {
-  name  = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}-network"
-  count = data.coder_workspace.me.start_count
+  name  = "coder-${local.user_username}-${local.workspace_name}-network"
+  count = local.workspace_start_count
 }
 
 resource "docker_container" "mysql" {
-  count        = data.coder_workspace.me.start_count
-  name         = "coder-${lower(data.coder_workspace.me.owner)}-${lower(data.coder_workspace.me.name)}-mysql"
-  image        = "mariadb:${data.coder_parameter.mariadb_version.value}"
+  count        = local.workspace_start_count
+  name         = "coder-${local.user_username}-${local.workspace_name}-mysql"
+  image        = "mariadb:${local.mariadb_version}"
   hostname     = "mysql"
-  network_mode = docker_network.workspace[count.index].name
+  network_mode = local.network_mode
   env = [
     "MYSQL_ROOT_PASSWORD=embold",
     "MYSQL_DATABASE=${local.db_name}",
@@ -174,7 +184,7 @@ resource "docker_container" "mysql" {
 }
 
 data "docker_registry_image" "php" {
-  name = "emboldcreative/php:${data.coder_parameter.php_version.value}-ubuntu${data.coder_parameter.ubuntu_version.value}"
+  name = "emboldcreative/php:${local.php_version}-ubuntu${local.ubuntu_version}"
 }
 
 resource "docker_image" "php" {
@@ -184,10 +194,10 @@ resource "docker_image" "php" {
 }
 
 resource "docker_container" "workspace" {
-  count      = data.coder_workspace.me.start_count
+  count      = local.workspace_start_count
   image      = docker_image.php.name
-  name       = "coder-${data.coder_workspace.me.owner}-${lower(data.coder_workspace.me.name)}"
-  hostname   = data.coder_workspace.me.name
+  name       = "coder-${local.user_username}-${local.workspace_name}"
+  hostname   = local.workspace_name
   entrypoint = ["sh", "-c", replace(coder_agent.main.init_script, "/localhost|127\\.0\\.0\\.1/", "host.docker.internal")]
   env = [
     "CODER_AGENT_TOKEN=${coder_agent.main.token}",
@@ -202,23 +212,23 @@ resource "docker_container" "workspace" {
     volume_name    = docker_volume.home_volume.name
     read_only      = false
   }
-  network_mode = docker_network.workspace[count.index].name
+  network_mode = local.network_mode
   # Add labels in Docker to keep track of orphan resources.
   labels {
     label = "coder.owner"
-    value = data.coder_workspace.me.owner
+    value = local.user_username
   }
   labels {
     label = "coder.owner_id"
-    value = data.coder_workspace.me.owner_id
+    value = local.user_id
   }
   labels {
     label = "coder.workspace_id"
-    value = data.coder_workspace.me.id
+    value = local.workspace_id
   }
   labels {
     label = "coder.workspace_name"
-    value = data.coder_workspace.me.name
+    value = local.workspace_name
   }
 }
 
@@ -233,7 +243,7 @@ resource "coder_app" "web_app" {
 }
 
 resource "coder_metadata" "container_info" {
-  count       = data.coder_workspace.me.start_count
+  count       = local.workspace_start_count
   resource_id = docker_container.workspace[0].id
 
   item {
@@ -241,12 +251,12 @@ resource "coder_metadata" "container_info" {
     value = basename(docker_image.php.name)
   }
   item {
-    key   = "devurl"
-    value = local.devurl
+    key   = "dev_url"
+    value = local.dev_url
   }
   item {
     key   = "php_version"
-    value = data.coder_parameter.php_version.value
+    value = local.php_version
   }
 }
 
@@ -264,7 +274,7 @@ module "code-server" {
 module "jetbrains_gateway" {
   source         = "https://registry.coder.com/modules/jetbrains-gateway"
   agent_id       = coder_agent.main.id
-  agent_name     = data.coder_workspace.me.name
+  agent_name     = local.workspace_name
   folder         = "/home/embold/code/${local.app}"
   jetbrains_ides = ["PS"]
   default        = "PS"
