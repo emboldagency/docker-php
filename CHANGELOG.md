@@ -1,8 +1,19 @@
-# Change Log
+<!-- markdownlint-disable MD024 -->
+# Changelog
 
-**[Keep a Changelog](http://keepachangelog.com/) | [Semantic Versioning](http://semver.org/)**
+All notable changes to this project will be documented in this file.
 
-## [1.1] - 2024-04-08
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+[What's this section for?](https://keepachangelog.com/en/1.1.0/#effort)
+
+### Changed
+
+- Updated Coder Provider
+
+## [v1.1](https://github.com/emboldagency/docker-php/tree/v1.1) - 2024-04-08
 
 Added dynamic template options to customize the workspace.
 
