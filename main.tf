@@ -41,7 +41,6 @@ locals {
   user_username         = lower(data.coder_workspace_owner.me.name)
   workspace_id          = data.coder_workspace.me.id
   workspace_name        = lower(data.coder_workspace.me.name)
-  workspace_start_count = data.coder_workspace.me.start_count
 }
 
 variable "DOCKER_REGISTRY_PASS" {
@@ -161,11 +160,11 @@ resource "docker_volume" "mysql_volume" {
 
 resource "docker_network" "workspace" {
   name  = "coder-${local.user_username}-${local.workspace_name}-network"
-  count = local.workspace_start_count
+  count = data.coder_workspace.me.start_count
 }
 
 resource "docker_container" "mysql" {
-  count        = local.workspace_start_count
+  count        = data.coder_workspace.me.start_count
   name         = "coder-${local.user_username}-${local.workspace_name}-mysql"
   image        = "mariadb:${local.mariadb_version}"
   hostname     = "mysql"
@@ -194,7 +193,7 @@ resource "docker_image" "php" {
 }
 
 resource "docker_container" "workspace" {
-  count      = local.workspace_start_count
+  count      = data.coder_workspace.me.start_count
   image      = docker_image.php.name
   name       = "coder-${local.user_username}-${local.workspace_name}"
   hostname   = local.workspace_name
@@ -243,7 +242,7 @@ resource "coder_app" "web_app" {
 }
 
 resource "coder_metadata" "container_info" {
-  count       = local.workspace_start_count
+  count       = data.coder_workspace.me.start_count
   resource_id = docker_container.workspace[0].id
 
   item {
