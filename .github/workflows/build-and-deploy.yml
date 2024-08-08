@@ -56,8 +56,10 @@ jobs:
             UBUNTU_VERSION=${{ matrix.ubuntu_version }}
 
   update-coder-template:
-    # Conditional execution based on skip-jobs input and initialization-job output
-    if: ${{ !contains(github.event.inputs['skip-jobs'], 'update-coder-template') && (needs.initialization.outputs.skip-build-and-push-docker == 'true' || success()) }}
+    # Conditional execution based on skip-jobs input and initialization job output
+    # Only runs if skip-jobs does not contain 'update-coder-template'
+    # OR build-and-push-docker job is successful
+    if: ${{ !contains(github.event.inputs['skip-jobs'], 'update-coder-template') || needs.initialization.outputs.skip-build-and-push-docker == 'true' || success() }}
     runs-on: ubuntu-latest
     needs: [initialization, build-and-push-docker]
     steps:
