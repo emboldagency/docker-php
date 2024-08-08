@@ -10,6 +10,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 [What's this section for?](https://keepachangelog.com/en/1.1.0/#effort)
 
+<!-- ### Added -->
+
+<!-- ### Changed -->
+
+<!-- ### Deprecated -->
+
+<!-- ### Removed -->
+
+<!-- ### Fixed -->
+
+<!-- ### Security -->
+
+## [v1.2.0](https://github.com/emboldagency/docker-php/tree/v1.2.0) - 2024-08-07
+
 ### Added
 
 - GitHub Actions workflows to push to DockerHub & publish the Coder template
@@ -20,14 +34,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - Updated Coder provider
 - Updated default parameter versions
 
-<!-- ### Deprecated -->
-
-<!-- ### Removed -->
-
-<!-- ### Fixed -->
-
-<!-- ### Security -->
-
+[Full Changelog](https://github.com/emboldagency/docker-php/compare/v1.1.0...v1.2.0)
 
 ## [v1.1.0](https://github.com/emboldagency/docker-php/tree/v1.1.0) - 2024-04-08
 
