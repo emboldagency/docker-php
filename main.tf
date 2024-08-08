@@ -31,7 +31,6 @@ locals {
   db_name               = replace(local.app, "-", "_")
   dev_url                = "https://webapp--main--${local.workspace_name}--${local.user_username}.embold.dev"
   mariadb_version       = data.coder_parameter.mariadb_version.value
-  network_mode          = docker_network.workspace[count.index].name
   php_version           = data.coder_parameter.php_version.value
   pulsar_app_name       = data.coder_parameter.pulsar_app_name.value
   ubuntu_version        = data.coder_parameter.ubuntu_version.value
@@ -168,7 +167,7 @@ resource "docker_container" "mysql" {
   name         = "coder-${local.user_username}-${local.workspace_name}-mysql"
   image        = "mariadb:${local.mariadb_version}"
   hostname     = "mysql"
-  network_mode = local.network_mode
+  network_mode = docker_network.workspace[count.index].name
   env = [
     "MYSQL_ROOT_PASSWORD=embold",
     "MYSQL_DATABASE=${local.db_name}",
@@ -211,7 +210,7 @@ resource "docker_container" "workspace" {
     volume_name    = docker_volume.home_volume.name
     read_only      = false
   }
-  network_mode = local.network_mode
+  network_mode = docker_network.workspace[count.index].name
   # Add labels in Docker to keep track of orphan resources.
   labels {
     label = "coder.owner"
