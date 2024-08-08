@@ -30,8 +30,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
         with:
-          context: .
-          file: ./Dockerfile
+          context: ./build
+          file: ./build/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USER }}/php:${{ matrix.php_version }}-ubuntu${{ matrix.ubuntu_version }}
           build-args: |
