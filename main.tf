@@ -37,7 +37,7 @@ locals {
   ubuntu_version        = data.coder_parameter.ubuntu_version.value
   user_email            = data.coder_workspace_owner.me.email
   user_full_name        = coalesce(data.coder_workspace_owner.me.full_name, local.user_username)
-  user_id               = data.coder_workspace_owner.id
+  user_id               = data.coder_workspace_owner.me.id
   user_username         = lower(data.coder_workspace_owner.me.name)
   workspace_id          = data.coder_workspace.me.id
   workspace_name        = lower(data.coder_workspace.me.name)
