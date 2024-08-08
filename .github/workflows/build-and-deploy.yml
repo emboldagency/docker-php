@@ -72,12 +72,11 @@ jobs:
       - name: Get Coder Server Version
         id: coder-version
         run: |
-          SERVER_VERSION=$(curl -s -H "Authorization: Bearer ${{ secrets.CODER_TOKEN }}" https://embold.dev/api/v2/buildinfo | jq -r '.version' | sed 's/^v//; s/+.*//')
-          echo "server_version=$SERVER_VERSION" >> $GITHUB_ENV
+          server_version=$(curl -s -H "Authorization: Bearer ${{ secrets.CODER_TOKEN }}" https://embold.dev/api/v2/buildinfo | jq -r '.version' | sed 's/^v//; s/+.*//')
+          echo "SERVER_VERSION=$server_version" >> $GITHUB_ENV
 
       - name: Install Coder CLI
         run: |
-          SERVER_VERSION=${{ steps.coder-version.outputs.server_version }}
           curl -fsSL https://coder.com/install.sh | sh -s -- --version $SERVER_VERSION
 
       - name: Log in to Coder
