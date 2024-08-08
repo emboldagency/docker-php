@@ -1,22 +1,38 @@
-name: Build and Push Docker Images
+name: Build and Deploy
 
 on:
-  push:
-    tags:
-      - "v*"
   workflow_dispatch:
+    inputs:
+      skip-jobs:
+        description: "Space-separated list of jobs to skip"
+        required: false
+        default: ""
 
 jobs:
-  build-and-push-docker:
+  initialization:
     runs-on: ubuntu-latest
+    outputs:
+      skip-build-and-push-docker: ${{ steps.set-skip-build-and-push-docker.outputs.skip }}
+    steps:
+      - name: Determine Jobs to Skip
+        id: set-skip-build-and-push-docker
+        run: |
+          if [[ "${{ github.event.inputs['skip-jobs'] }}" == *"build-and-push-docker"* ]]; then
+            echo "::set-output name=skip::true"
+          else
+            echo "::set-output name=skip::false"
+          fi
 
+  build-and-push-docker:
+    if: ${{ !contains(github.event.inputs['skip-jobs'], 'build-and-push-docker') }}
+    runs-on: ubuntu-latest
+    needs: initialization
     strategy:
       matrix:
         php_version: ["8.3", "8.2", "8.1", "7.4"]
         ubuntu_version: ["24.04", "22.04"]
-
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v2
 
       - name: Set up Docker Buildx
@@ -28,7 +44,7 @@ jobs:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
-      - name: Build and push Docker image
+      - name: Build and Push Docker Image
         uses: docker/build-push-action@v2
         with:
           context: ./build
@@ -40,11 +56,12 @@ jobs:
             UBUNTU_VERSION=${{ matrix.ubuntu_version }}
 
   update-coder-template:
+    # Conditional execution based on skip-jobs input and initialization-job output
+    if: ${{ !contains(github.event.inputs['skip-jobs'], 'update-coder-template') && (needs.initialization.outputs.skip-build-and-push-docker == 'true' || success()) }}
     runs-on: ubuntu-latest
-    needs: build-and-push-docker
-
+    needs: [initialization, build-and-push-docker]
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v2
 
       - name: Install Coder CLI
