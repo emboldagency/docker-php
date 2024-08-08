@@ -2,8 +2,8 @@ name: Push Coder Template
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - "v*"
 
 jobs:
   update-template:
@@ -18,7 +18,7 @@ jobs:
           curl -fsSL https://coder.com/install.sh | sh
 
       - name: Log in to Coder
-        run: coder login --token ${{ secrets.CODER_TOKEN }} --url https://embold.dev
+        run: coder login --token ${{ secrets.CODER_TOKEN }} --url https://embold.dev --no-version-warning
 
       - name: Push PHP Template
-        run: coder template push php
+        run: yes | coder template push php
