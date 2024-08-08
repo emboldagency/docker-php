@@ -27,6 +27,7 @@ RUN add-apt-repository -y ppa:ondrej/php && \
     libapache2-mod-php${PHP_VERSION} \
     mariadb-client \
     php${PHP_VERSION} \
+    php${PHP_VERSION}-bcmath \
     php${PHP_VERSION}-bz2 \
     php${PHP_VERSION}-cgi \
     php${PHP_VERSION}-cli \
@@ -62,6 +63,7 @@ RUN add-apt-repository -y ppa:ondrej/php && \
     && rm -rf /var/lib/apt/lists/*
 
 # Install version specific packages, if any
+# Added these to handle the packages that are only available for specific versions of PHP
 
 FROM base as php7.3
 
@@ -82,17 +84,7 @@ FROM base as php8.1
 
 FROM base as php8.2
 
-RUN apt-get update \
-    && apt-get install -y \
-    php8.2-bcmath \
-    && rm -rf /var/lib/apt/lists/*
-
 FROM base as php8.3
-
-RUN apt-get update \
-    && apt-get install -y \
-    php8.3-bcmath \
-    && rm -rf /var/lib/apt/lists/*
 
 FROM php${PHP_VERSION} as final
 

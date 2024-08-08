@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 ### Added
 
 - GitHub Actions workflows to push to DockerHub & publish the Coder template
+- Install php-bcmath base for all PHP versions
 
 ### Changed
 
