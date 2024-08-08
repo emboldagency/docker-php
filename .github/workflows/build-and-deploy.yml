@@ -64,12 +64,23 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
+      - name: Install jq (JSON processor)
+        run: sudo apt-get install -y jq
+
+      - name: Get Coder Server Version
+        id: coder-version
+        run: |
+          SERVER_VERSION=$(curl -s -H "Authorization: Bearer ${{ secrets.CODER_TOKEN }}" https://embold.dev/api/v2/version | jq -r '.version')
+          echo "Server version: $SERVER_VERSION"
+          echo "::set-output name=server_version::$SERVER_VERSION"
+
       - name: Install Coder CLI
         run: |
-          curl -fsSL https://coder.com/install.sh | sh
+          SERVER_VERSION=${{ steps.coder-version.outputs.server_version }}
+          curl -fsSL https://coder.com/install.sh | sh -s -- --version $SERVER_VERSION
 
       - name: Log in to Coder
-        run: coder login --token ${{ secrets.CODER_TOKEN }} --yes --url https://embold.dev --no-version-warning
+        run: coder login --token ${{ secrets.CODER_TOKEN }} --url https://embold.dev
 
       - name: Push PHP Template
-        run: coder template push php --yes
+        run: coder template push --yes php
