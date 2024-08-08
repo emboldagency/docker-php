@@ -1,6 +1,10 @@
 name: Build and Deploy
 
 on:
+  push:
+    tags:
+      - 'v.*'
+      - '!*-pre'
   workflow_dispatch:
     inputs:
       skip-jobs:
