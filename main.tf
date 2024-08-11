@@ -46,6 +46,10 @@ variable "DOCKER_REGISTRY_PASS" {
   sensitive = true
 }
 
+variable "GH_PULSAR_PAT" {
+  sensitive = true
+}
+
 data "coder_parameter" "pulsar_app_name" {
   name        = "Pulsar App Name"
   description = "What is the pulsar app name? If this is blank, the workspace name will be used."
@@ -92,6 +96,7 @@ resource "coder_agent" "main" {
     CODER_WORKSPACE_NAME = local.workspace_name
     CODER_WORKSPACE_PORT = 443
     DEVURL               = local.dev_url
+    GH_PULSAR_PAT        = var.GH_PULSAR_PAT
     GIT_AUTHOR_NAME      = local.user_full_name
     GIT_AUTHOR_EMAIL     = local.user_email
     GIT_COMMITTER_NAME   = local.user_full_name
