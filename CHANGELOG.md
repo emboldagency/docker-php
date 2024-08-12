@@ -24,6 +24,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 ## [v1.2.1](https://github.com/emboldagency/docker-php/tree/v1.2.1) - 2024-08-08
 
+[Full Changelog](https://github.com/emboldagency/docker-php/compare/v1.2.0...v1.2.1)
+
 ### Added
 
 - Workflow can be run manually, with options to skip a job by name
@@ -37,9 +39,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 - Coder template push job
 
-[Full Changelog](https://github.com/emboldagency/docker-php/compare/v1.2.0...v1.2.1)
-
 ## [v1.2.0](https://github.com/emboldagency/docker-php/tree/v1.2.0) - 2024-08-07
+
+[Full Changelog](https://github.com/emboldagency/docker-php/compare/v1.1.0...v1.2.0)
 
 ### Added
 
@@ -50,8 +52,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 - Updated Coder provider
 - Updated default parameter versions
-
-[Full Changelog](https://github.com/emboldagency/docker-php/compare/v1.1.0...v1.2.0)
 
 ## [v1.1.0](https://github.com/emboldagency/docker-php/tree/v1.1.0) - 2024-04-08
 
