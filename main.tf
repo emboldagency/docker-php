@@ -33,7 +33,7 @@ locals {
   mariadb_version       = data.coder_parameter.mariadb_version.value
   php_version           = data.coder_parameter.php_version.value
   pulsar_app_name       = data.coder_parameter.pulsar_app_name.value
-  pulsar_magic_template = data.coder_parameter.magic_template.value
+  pulsar_magic_template = data.coder_parameter.pulsar_magic_template.value
   ubuntu_version        = data.coder_parameter.ubuntu_version.value
   user_email            = data.coder_workspace_owner.me.email
   user_full_name        = coalesce(data.coder_workspace_owner.me.full_name, local.user_username)

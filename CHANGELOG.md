@@ -18,9 +18,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 <!-- ### Removed -->
 
-<!-- ### Fixed -->
+### Fixed
+
+- Corrected the reference for the Pulsar magic template parameter
 
 <!-- ### Security -->
+
 
 ## [v1.3.0](https://github.com/emboldagency/docker-php/tree/v1.3.0) - 2024-11-27
 
