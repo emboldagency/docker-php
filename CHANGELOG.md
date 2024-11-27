@@ -22,6 +22,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 <!-- ### Security -->
 
+## [v1.3.0](https://github.com/emboldagency/docker-php/tree/v1.3.0) - 2024-11-27
+
+### Added
+
+- Pulsar magic template parameter
+
+### Changed
+
+- Capitalize references to Pulsar
+
+[Full Changelog](https://github.com/emboldagency/docker-php/compare/v1.2.1...v1.3.0)
+
+
 ## [v1.2.1](https://github.com/emboldagency/docker-php/tree/v1.2.1) - 2024-08-08
 
 Added manual workflow with job skipping; fixed deprecations; used locals for easier reference changes; fixed Coder template push job.
