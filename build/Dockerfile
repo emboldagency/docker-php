@@ -2,7 +2,7 @@ ARG UBUNTU_VERSION=24.04 \
     PHP_VERSION=8.3 \
     RUBY_VERSION=3.3.0
 
-FROM emboldcreative/base:ubuntu${UBUNTU_VERSION} as base
+FROM emboldcreative/base:ubuntu${UBUNTU_VERSION} AS base
 
 ARG PHP_VERSION \
     RUBY_VERSION
@@ -65,7 +65,7 @@ RUN add-apt-repository -y ppa:ondrej/php && \
 # Install version specific packages, if any
 # Added these to handle the packages that are only available for specific versions of PHP
 
-FROM base as php7.3
+FROM base AS php7.3
 
 RUN apt-get update \
     && apt-get install -y \
@@ -73,20 +73,20 @@ RUN apt-get update \
     php7.3-recode \
     && rm -rf /var/lib/apt/lists/*
 
-FROM base as php7.4
+FROM base AS php7.4
 
 RUN apt-get update \
     && apt-get install -y \
     php7.4-json \
     && rm -rf /var/lib/apt/lists/*
 
-FROM base as php8.1
+FROM base AS php8.1
 
-FROM base as php8.2
+FROM base AS php8.2
 
-FROM base as php8.3
+FROM base AS php8.3
 
-FROM php${PHP_VERSION} as final
+FROM php${PHP_VERSION} AS final
 
 ARG PHP_VERSION
 
