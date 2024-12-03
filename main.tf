@@ -73,6 +73,26 @@ data "coder_parameter" "php_version" {
   type        = "string"
   default     = "8.3"
   mutable     = true
+  option {
+    name  = "8.4"
+    value = "8.4"
+  }
+  option {
+    name  = "8.3"
+    value = "8.3"
+  }
+  option {
+    name  = "8.2"
+    value = "8.2"
+  }
+  option {
+    name  = "8.1"
+    value = "8.1"
+  }
+  option {
+    name  = "7.4"
+    value = "7.4"
+  }
 }
 
 data "coder_parameter" "mariadb_version" {
@@ -101,6 +121,14 @@ data "coder_parameter" "ubuntu_version" {
   type        = "string"
   default     = "24.04"
   mutable     = true
+  option {
+    name  = "24.04 LTS (Noble)"
+    value = "24.04"
+  }
+  option {
+    name  = "22.04 LTS (Jammy)"
+    value = "22.04"
+  }
 }
 
 resource "coder_agent" "main" {
