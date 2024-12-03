@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 - Added PHP 8.4
 - Added `mariadb_auto_upgrade` parameter and environment variable to facilitate upgrading the MariaDB version
+- Added dotfiles coder param
 
 ### Changed
 
