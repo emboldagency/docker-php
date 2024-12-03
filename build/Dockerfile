@@ -86,6 +86,8 @@ FROM base AS php8.2
 
 FROM base AS php8.3
 
+FROM base AS php8.4
+
 FROM php${PHP_VERSION} AS final
 
 ARG PHP_VERSION

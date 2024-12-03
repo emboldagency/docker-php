@@ -10,9 +10,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 [What's this section for?](https://keepachangelog.com/en/1.1.0/#effort)
 
-<!-- ### Added -->
+### Added
 
-<!-- ### Changed -->
+- Added PHP 8.4
 
 <!-- ### Deprecated -->
 

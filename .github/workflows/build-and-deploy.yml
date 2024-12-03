@@ -33,7 +33,7 @@ jobs:
     needs: initialization
     strategy:
       matrix:
-        php_version: ["8.3", "8.2", "8.1", "7.4"]
+        php_version: ["8.4", "8.3", "8.2", "8.1", "7.4"]
         ubuntu_version: ["24.04", "22.04"]
     steps:
       - name: Checkout Repository
