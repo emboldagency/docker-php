@@ -10,6 +10,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 [What's this section for?](https://keepachangelog.com/en/1.1.0/#effort)
 
+<!-- Added -->
+<!-- Changed -->
+<!-- Deprecated -->
+<!-- Removed -->
+<!-- Fixed -->
+<!-- Security -->
+
+## [v1.3.1](https://github.com/emboldagency/docker-php/tree/v1.3.1) - 2024-12-03
+
 ### Added
 
 - Added PHP 8.4
@@ -33,6 +42,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 <!-- ### Security -->
 
+[Full Changelog](https://github.com/emboldagency/docker-php/compare/v1.3.0...v1.3.1)
 
 ## [v1.3.0](https://github.com/emboldagency/docker-php/tree/v1.3.0) - 2024-11-27
 
