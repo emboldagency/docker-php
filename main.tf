@@ -31,6 +31,7 @@ locals {
   db_name               = replace(local.app, "-", "_")
   dev_url               = "https://webapp--main--${local.workspace_name}--${local.user_username}.embold.dev"
   mariadb_version       = data.coder_parameter.mariadb_version.value
+  mariadb_auto_upgrade  = data.coder_parameter.mariadb_auto_upgrade.value ? "1" : "0"
   php_version           = data.coder_parameter.php_version.value
   pulsar_app_name       = data.coder_parameter.pulsar_app_name.value
   pulsar_magic_template = data.coder_parameter.pulsar_magic_template.value
@@ -81,6 +82,16 @@ data "coder_parameter" "mariadb_version" {
   type        = "string"
   default     = "10.11"
   mutable     = true
+}
+
+data "coder_parameter" "mariadb_auto_upgrade" {
+  name        = "MariaDB Auto Upgrade"
+  description = "Should MariaDB automatically upgrade the database schema? Set this to true if the MariaDB version has changed since the last workspace build."  
+  icon        = "/icon/database.svg"
+  type        = "bool"
+  default     = false
+  mutable     = true
+  ephemeral   = true
 }
 
 data "coder_parameter" "ubuntu_version" {
@@ -184,6 +195,7 @@ resource "docker_container" "mysql" {
     "MYSQL_DATABASE=${local.db_name}",
     "MYSQL_USER=embold",
     "MYSQL_PASSWORD=embold",
+    "MARIADB_AUTO_UPGRADE=${local.mariadb_auto_upgrade}"
   ]
   volumes {
     container_path = "/var/lib/mysql"
