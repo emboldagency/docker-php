@@ -11,6 +11,12 @@ terraform {
   }
 }
 
+provider "coder" {}
+
+data "coder_external_auth" "github" {
+  id = "github"
+}
+
 provider "docker" {
   registry_auth {
     address  = "registry-1.docker.io"
@@ -31,6 +37,7 @@ locals {
   db_name               = replace(local.app, "-", "_")
   dev_url               = "https://webapp--main--${local.workspace_name}--${local.user_username}.embold.dev"
   dotfiles_url          = data.coder_parameter.dotfiles_url.value
+  github_token          = data.coder_external_auth.github.access_token
   mariadb_version       = data.coder_parameter.mariadb_version.value
   mariadb_auto_upgrade  = data.coder_parameter.mariadb_auto_upgrade.value ? "1" : "0"
   php_version           = data.coder_parameter.php_version.value
@@ -258,6 +265,7 @@ resource "docker_container" "workspace" {
   entrypoint = ["sh", "-c", replace(coder_agent.main.init_script, "/localhost|127\\.0\\.0\\.1/", "host.docker.internal")]
   env = [
     "CODER_AGENT_TOKEN=${coder_agent.main.token}",
+    "GITHUB_TOKEN=${local.github_token}",
     "HOSTNAME=${local.app}",
     "MYSQL_HOST=mysql",
     "MYSQL_DATABASE=${local.db_name}",
