@@ -17,6 +17,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 <!-- Fixed -->
 <!-- Security -->
 
+### Changed
+- Made pulsar magic template param mutable
+- Changed pulsar magic template param color to embold blue
+
 ## [v1.3.1](https://github.com/emboldagency/docker-php/tree/v1.3.1) - 2024-12-03
 
 ### Added
