@@ -82,45 +82,59 @@ data "coder_parameter" "pulsar_magic_template" {
 
 data "coder_parameter" "php_version" {
   name        = "PHP Version"
-  description = "Which version of PHP? Must match a emboldcreative/php image tag on DockerHub"
+  description = <<DESC
+Which version of PHP?
+◉ Must match a emboldcreative/php image tag on DockerHub
+DESC
   icon        = "/icon/php.svg"
-  type        = "string"
-  default     = "8.3"
+  type        = number
+  default     = 8.3
   mutable     = true
   option {
-    name  = "8.4"
-    value = "8.4"
+    name  = 8.4
+    value = 8.4
   }
   option {
-    name  = "8.3"
-    value = "8.3"
+    name  = 8.3
+    value = 8.3
   }
   option {
-    name  = "8.2"
-    value = "8.2"
+    name  = 8.2
+    value = 8.2
   }
   option {
-    name  = "8.1"
-    value = "8.1"
+    name  = 8.1
+    value = 8.1
   }
   option {
-    name  = "7.4"
-    value = "7.4"
+    name  = 7.4
+    value = 7.4
   }
 }
 
 data "coder_parameter" "mariadb_version" {
   name        = "MariaDB Version"
-  description = "What version of MariaDB? Must match an official mariadb image tag on DockerHub"
+  description = <<DESC
+What version of MariaDB?
+◉ Must match an official mariadb image tag on DockerHub.
+◉ Downgrading is not supported.
+◉ See also the mariadb_auto_upgrade param.
+DESC
   icon        = "/icon/database.svg"
-  type        = "string"
-  default     = "10.11"
+  type        = "number"
+  default     = 11.6
   mutable     = true
+  validation {
+    monotonic = "increasing"
+  }
 }
 
 data "coder_parameter" "mariadb_auto_upgrade" {
   name        = "MariaDB Auto Upgrade"
-  description = "Should MariaDB automatically upgrade the database schema? Set this to true if the MariaDB version has changed since the last workspace build."  
+  description = <<DESC
+Should MariaDB automatically upgrade the database schema?
+◉ Set this to true if the MariaDB version has changed since the last workspace build.
+DESC
   icon        = "/icon/database.svg"
   type        = "bool"
   default     = false
@@ -130,18 +144,21 @@ data "coder_parameter" "mariadb_auto_upgrade" {
 
 data "coder_parameter" "ubuntu_version" {
   name        = "Ubuntu Version"
-  description = "Which version of Ubuntu? Must match a emboldcreative/base image tag on DockerHub"
+  description = <<DESC
+Which version of Ubuntu?
+◉ Must match a emboldcreative/base image tag on DockerHub
+DESC
   icon        = "/icon/ubuntu.svg"
-  type        = "string"
-  default     = "24.04"
+  type        = number
+  default     = 24.04
   mutable     = true
   option {
     name  = "24.04 LTS (Noble)"
-    value = "24.04"
+    value = 24.04
   }
   option {
     name  = "22.04 LTS (Jammy)"
-    value = "22.04"
+    value = 22.04
   }
 }
 

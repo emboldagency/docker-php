@@ -30,6 +30,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - Made pulsar magic template param mutable
 - Changed pulsar magic template param color to embold blue
 - Upgraded Coder provider
+- Updated coder params descriptions and utilize number type to allow validation
 
 [Full Changelog](https://github.com/emboldagency/docker-php/compare/v1.3.1...v1.3.2)
 
