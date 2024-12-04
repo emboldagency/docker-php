@@ -17,9 +17,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 <!-- Fixed -->
 <!-- Security -->
 
+### Added
+- Github CLI token
+
+## [v1.3.2](https://github.com/emboldagency/docker-php/tree/v1.3.2) - 2024-12-04
+
 ### Changed
 - Made pulsar magic template param mutable
 - Changed pulsar magic template param color to embold blue
+
+[Full Changelog](https://github.com/emboldagency/docker-php/compare/v1.3.1...v1.3.2)
+
 
 ## [v1.3.1](https://github.com/emboldagency/docker-php/tree/v1.3.1) - 2024-12-03
 
@@ -34,17 +42,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - Reintroduced option lists for certain Coder parameters where appropriate
 - Upgraded terraform providers
 
-<!-- ### Deprecated -->
-
-<!-- ### Removed -->
-
 ### Fixed
 
 - Corrected the reference for the Pulsar magic template parameter
 - Resolved `Dockerfile FromAsCasing` warning
 - Updated GitHub Action versions to address 'save-state' deprecations
-
-<!-- ### Security -->
 
 [Full Changelog](https://github.com/emboldagency/docker-php/compare/v1.3.0...v1.3.1)
 
