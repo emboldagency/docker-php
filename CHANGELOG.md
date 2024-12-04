@@ -17,6 +17,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 <!-- Fixed -->
 <!-- Security -->
 
+## [v2.0.0](https://github.com/emboldagency/docker-php/tree/v2.0.0) - 2024-12-04
+
+### Changed
+- Upgraded Coder provider for v2
+- Update coder param descriptions and utilize number type to allow for validation
+
+[Full Changelog](https://github.com/emboldagency/docker-php/compare/v1.4.0...v2.0.0)
+
 ## [v1.4.0](https://github.com/emboldagency/docker-php/tree/v1.4.0) - 2024-12-04
 
 ### Added
