@@ -11,7 +11,7 @@ export APACHE_RUN_GROUP=embold
 export APACHE_PID_FILE=/var/run/apache2$SUFFIX/apache2.pid
 export APACHE_RUN_DIR=/var/run/apache2$SUFFIX
 export APACHE_LOCK_DIR=/var/lock/apache2$SUFFIX
-export APACHE_LOG_DIR=/var/log/apache2$SUFFIX
+export APACHE_LOG_DIR=/home/embold/logs$SUFFIX
 
 ## The locale used by some modules like mod_dav
 # export LANG=C
