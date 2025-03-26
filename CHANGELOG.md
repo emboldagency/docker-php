@@ -17,6 +17,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 <!-- Fixed -->
 <!-- Security -->
 
+## [v1.5.0](https://github.com/emboldagency/docker-php/tree/v1.5.0) - 2025-03-25
+- Better error handling for Apache and PHP
+- Tie template version to docker image tag
+
 ## [v1.4.0](https://github.com/emboldagency/docker-php/tree/v1.4.0) - 2024-12-04
 
 ### Added

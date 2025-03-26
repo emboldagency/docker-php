@@ -120,4 +120,6 @@ USER embold
 RUN mkdir -p $GEM_HOME \
     && gem install colorls /coder/pulsar-*.gem --conservative
 
+RUN mkdir $HOME/logs
+
 CMD ["/bin/zsh"]

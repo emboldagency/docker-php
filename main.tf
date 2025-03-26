@@ -43,6 +43,7 @@ locals {
   php_version           = data.coder_parameter.php_version.value
   pulsar_app_name       = data.coder_parameter.pulsar_app_name.value
   pulsar_magic_template = data.coder_parameter.pulsar_magic_template.value
+  template_version      = data.coder_metadata.template_version.value
   ubuntu_version        = data.coder_parameter.ubuntu_version.value
   user_email            = data.coder_workspace_owner.me.email
   user_full_name        = coalesce(data.coder_workspace_owner.me.full_name, local.user_username)
@@ -54,6 +55,12 @@ locals {
 
 variable "DOCKER_REGISTRY_PASS" {
   sensitive = true
+}
+
+data "coder_metadata" "template_version" {
+  type        = string
+  description = "The version of the module."
+  value       = "v1.5.0"
 }
 
 data "coder_parameter" "dotfiles_url" {
@@ -248,7 +255,7 @@ resource "docker_container" "mysql" {
 }
 
 data "docker_registry_image" "php" {
-  name = "emboldcreative/php:${local.php_version}-ubuntu${local.ubuntu_version}"
+  name = "emboldcreative/php:${local.php_version}-ubuntu${local.ubuntu_version}-${local.template_version}"
 }
 
 resource "docker_image" "php" {
