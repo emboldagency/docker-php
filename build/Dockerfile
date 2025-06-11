@@ -60,6 +60,33 @@ RUN add-apt-repository -y ppa:ondrej/php && \
     php${PHP_VERSION}-xmlrpc \
     php${PHP_VERSION}-xsl \
     php${PHP_VERSION}-zip \
+    # Browser and image processing dependencies
+    chromium-browser \
+    imagemagick \
+    libatk-bridge2.0-0 \
+    libatk1.0-0 \
+    libcups2 \
+    libdrm2 \
+    libgbm1 \
+    libgtk-3-0 \
+    libmagickwand-dev \
+    libnss3 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libx11-xcb1 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxrandr2 \
+    libxss1 \
+    # Ubuntu version specific dependencies
+    && if [ "$UBUNTU_VERSION" = "24.04" ]; then \
+    apt-get install -y --no-install-recommends \
+    libasound2t64; \
+    fi \
+    && if [ "$UBUNTU_VERSION" = "22.04" ]; then \
+    apt-get install -y --no-install-recommends \
+    libasound2; \
+    fi \
     && rm -rf /var/lib/apt/lists/*
 
 # Install version specific packages, if any
@@ -122,7 +149,5 @@ USER embold
 
 RUN mkdir -p $GEM_HOME \
     && gem install colorls /coder/pulsar-*.gem --conservative
-
-RUN mkdir $HOME/logs
 
 CMD ["/bin/zsh"]
