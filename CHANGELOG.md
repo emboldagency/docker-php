@@ -17,13 +17,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 <!-- Fixed -->
 <!-- Security -->
 
+## [v1.6.0](https://github.com/emboldagency/docker-php/tree/v1.6.0) -- 2025-06-11
+
+### Added
+
+- Add browser and image processing dependencies to the base image.
+
+### Changed
+
+- Refactor Apache environment variables handling for better compatibility and maintainability.
+
+### Fixed
+
+- Update Dockerfile to fix `libasound` package name change for Ubuntu 24.04 (`libasound2` to `libasound2t64`).
+
+[Full Changelog](https://github.com/emboldagency/docker-php/compare/v1.5.0...v1.6.0)
+
 ## [v1.5.0](https://github.com/emboldagency/docker-php/tree/v1.5.0) - 2025-03-25
+
 - Better error handling for Apache and PHP
 - Tie template version to docker image tag
 
 ## [v1.4.0](https://github.com/emboldagency/docker-php/tree/v1.4.0) - 2024-12-04
 
 ### Added
+
 - Github CLI token
 
 [Full Changelog](https://github.com/emboldagency/docker-php/compare/v1.3.2...v1.4.0)
@@ -31,6 +49,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 ## [v1.3.2](https://github.com/emboldagency/docker-php/tree/v1.3.2) - 2024-12-04
 
 ### Changed
+
 - Made pulsar magic template param mutable
 - Changed pulsar magic template param color to embold blue
 
@@ -68,7 +87,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - Capitalize references to Pulsar
 
 [Full Changelog](https://github.com/emboldagency/docker-php/compare/v1.2.1...v1.3.0)
-
 
 ## [v1.2.1](https://github.com/emboldagency/docker-php/tree/v1.2.1) - 2024-08-08
 
