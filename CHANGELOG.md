@@ -11,11 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 [What's this section for?](https://keepachangelog.com/en/1.1.0/#effort)
 
 <!-- ### Added -->
-### Changed
-
-- Update GitHub Actions to use Coder install script from embold.dev for version matching.
-- Update terraform providers
-
+<!-- ### Changed -->
 <!-- ### Deprecated -->
 <!-- ### Removed -->
 <!-- ### Fixed -->
@@ -30,6 +26,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 ### Changed
 
 - Refactor Apache environment variables handling.
+- Use Coder GitHub action instead of custom steps.
+- Update terraform providers.
 
 [Full Changelog](https://github.com/emboldagency/docker-php/compare/v1.5.0...v1.6.0)
 

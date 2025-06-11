@@ -72,11 +72,13 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Install Coder CLI
-        run: curl -fsSL "https://embold.dev/install.sh" | sh
-
-      - name: Log in to Coder
-        run: coder login --token ${{ secrets.CODER_TOKEN }} --url https://embold.dev
-
-      - name: Push PHP Template
-        run: coder templates push --yes php
+      - name: Update Coder Template
+        uses: matifali/update-coder-template@v3
+        with:
+          id: php
+          dir: .
+          url: https://embold.dev
+          name: ${{ github.ref_name }}
+          message: "Uploaded by GitHub Actions. Release notes: https://github.com/emboldagency/docker-php/releases/tag/${{ github.ref_name }}"
+          coder_session_token: ${{ secrets.CODER_TOKEN }}
+          dry_run: true
