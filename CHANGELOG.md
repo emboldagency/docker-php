@@ -17,26 +17,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 <!-- Fixed -->
 <!-- Security -->
 
-## [v1.6.0](https://github.com/emboldagency/docker-php/tree/v1.6.0) -- 2025-06-11
+## [v1.6.0](https://github.com/emboldagency/docker-php/tree/v1.6.0) - 2025-06-11
 
 ### Added
 
-- Add browser and image processing dependencies to the base image.
+- Add browser and image processing dependencies.
 
 ### Changed
 
-- Refactor Apache environment variables handling for better compatibility and maintainability.
-
-### Fixed
-
-- Update Dockerfile to fix `libasound` package name change for Ubuntu 24.04 (`libasound2` to `libasound2t64`).
+- Refactor Apache environment variables handling.
 
 [Full Changelog](https://github.com/emboldagency/docker-php/compare/v1.5.0...v1.6.0)
 
-## [v1.5.0](https://github.com/emboldagency/docker-php/tree/v1.5.0) - 2025-03-25
+## [v1.5.0](https://github.com/emboldagency/docker-php/tree/v1.5.0) - 2025-03-26
 
-- Better error handling for Apache and PHP
-- Tie template version to docker image tag
+### Added
+
+- Add TODO.md for tracking outstanding tasks and improvements, including more terraform modules to checkout.
+- Improved error handling for Apache and PHP to provide better diagnostics.
+
+### Changed
+
+- Better error handling for Apache and PHP.
+- Tie template version to Docker image tag.
+
+[Full Changelog](https://github.com/emboldagency/docker-php/compare/v1.4.0...v1.5.0)
 
 ## [v1.4.0](https://github.com/emboldagency/docker-php/tree/v1.4.0) - 2024-12-04
 
