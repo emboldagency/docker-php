@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 ### Changed
 
 - Update GitHub Actions to use Coder install script from embold.dev for version matching.
+- Update terraform providers
+
 <!-- ### Deprecated -->
 <!-- ### Removed -->
 <!-- ### Fixed -->
