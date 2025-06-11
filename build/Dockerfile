@@ -98,7 +98,10 @@ RUN cd /coder \
     && ln -s /coder/conf/embold-mysql.cnf /etc/mysql/conf.d/embold.cnf \
     && ln -s /coder/conf/embold-php.ini /etc/php/${PHP_VERSION}/mods-available/embold.ini \
     && cp conf/embold-apache.conf /etc/apache2/conf-available/embold.conf \
-    && cp conf/apache-envvars /etc/apache2/envvars \
+    && sed -i 's/^export APACHE_RUN_USER=.*/export APACHE_RUN_USER=embold/' /etc/apache2/envvars \
+    && sed -i 's/^export APACHE_RUN_GROUP=.*/export APACHE_RUN_GROUP=embold/' /etc/apache2/envvars \
+    && grep -qxF '. /etc/default/locale' /etc/apache2/envvars || echo '. /etc/default/locale' >> /etc/apache2/envvars \
+    && grep -qxF 'export LANG' /etc/apache2/envvars || echo 'export LANG' >> /etc/apache2/envvars \
     && rsync -a --delete conf/sites-available/ /etc/apache2/sites-available \
     # Combine our configure scripts
     && cat scripts/configure-php >> scripts/configure \
