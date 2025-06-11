@@ -72,18 +72,8 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Install jq (JSON processor)
-        run: sudo apt-get install -y jq
-
-      - name: Get Coder Server Version
-        id: coder-version
-        run: |
-          server_version=$(curl -s -H "Authorization: Bearer ${{ secrets.CODER_TOKEN }}" https://embold.dev/api/v2/buildinfo | jq -r '.version' | sed 's/^v//; s/+.*//')
-          echo "SERVER_VERSION=$server_version" >> $GITHUB_ENV
-
       - name: Install Coder CLI
-        run: |
-          curl -fsSL https://coder.com/install.sh | sh -s -- --version $SERVER_VERSION
+        run: curl -fsSL "https://embold.dev/install.sh" | sh
 
       - name: Log in to Coder
         run: coder login --token ${{ secrets.CODER_TOKEN }} --url https://embold.dev

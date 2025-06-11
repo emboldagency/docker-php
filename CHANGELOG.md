@@ -10,12 +10,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 [What's this section for?](https://keepachangelog.com/en/1.1.0/#effort)
 
-<!-- Added -->
-<!-- Changed -->
-<!-- Deprecated -->
-<!-- Removed -->
-<!-- Fixed -->
-<!-- Security -->
+<!-- ### Added -->
+### Changed
+
+- Update GitHub Actions to use Coder install script from embold.dev for version matching.
+<!-- ### Deprecated -->
+<!-- ### Removed -->
+<!-- ### Fixed -->
+<!-- ### Security -->
 
 ## [v1.6.0](https://github.com/emboldagency/docker-php/tree/v1.6.0) - 2025-06-11
 
