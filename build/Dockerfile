@@ -78,43 +78,50 @@ RUN add-apt-repository -y ppa:ondrej/php && \
     libxdamage1 \
     libxrandr2 \
     libxss1 \
-    # Ubuntu version specific dependencies
-    && if [ "$UBUNTU_VERSION" = "24.04" ]; then \
-    apt-get install -y --no-install-recommends \
-    libasound2t64; \
-    fi \
-    && if [ "$UBUNTU_VERSION" = "22.04" ]; then \
-    apt-get install -y --no-install-recommends \
-    libasound2; \
-    fi \
     && rm -rf /var/lib/apt/lists/*
 
 # Install version specific packages, if any
-# Added these to handle the packages that are only available for specific versions of PHP
+# Added these to handle the packages that are only available for specific platform versions
 
-FROM base AS php7.3
+FROM base AS ubuntu22.04
 
-RUN apt-get update \
-    && apt-get install -y \
+RUN apt-get update && \
+    apt-get install -y -q --no-install-recommends \
+    libasound2 \
+    && rm -rf /var/lib/apt/lists/*
+
+FROM base AS ubuntu24.04
+
+RUN apt-get update && \
+    apt-get install -y -q --no-install-recommends \
+    libasound2t64 \
+    && rm -rf /var/lib/apt/lists/*
+
+FROM ubuntu${UBUNTU_VERSION} AS php7.3
+
+RUN apt-get update && \
+    apt-get install -y -q --no-install-recommends \
     php7.3-json \
     php7.3-recode \
     && rm -rf /var/lib/apt/lists/*
 
-FROM base AS php7.4
+FROM ubuntu${UBUNTU_VERSION} AS php7.4
 
-RUN apt-get update \
+RUN apt-get update && \
+    apt-get install -y -q --no-install-recommends \
     && apt-get install -y \
     php7.4-json \
     && rm -rf /var/lib/apt/lists/*
 
-FROM base AS php8.1
+FROM ubuntu${UBUNTU_VERSION} AS php8.1
 
-FROM base AS php8.2
+FROM ubuntu${UBUNTU_VERSION} AS php8.2
 
-FROM base AS php8.3
+FROM ubuntu${UBUNTU_VERSION} AS php8.3
 
-FROM base AS php8.4
+FROM ubuntu${UBUNTU_VERSION} AS php8.4
 
+# Final image that combines all the previous layers and sets up the environment
 FROM php${PHP_VERSION} AS final
 
 ARG PHP_VERSION
