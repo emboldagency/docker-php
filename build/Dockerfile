@@ -18,8 +18,8 @@ USER root
 # Copy Ruby from the builder stage
 COPY --from=ruby /usr/local /usr/local
 
-RUN gem update --system \
-    && chown -R embold:embold /home/embold/.gems
+RUN gem update --system && \
+    chown -R embold:embold /home/embold/.gems
 
 RUN add-apt-repository -y ppa:ondrej/php && \
     add-apt-repository -y ppa:ondrej/apache2 && \
@@ -81,8 +81,8 @@ RUN add-apt-repository -y ppa:ondrej/php && \
     libxcomposite1 \
     libxdamage1 \
     libxrandr2 \
-    libxss1 \
-    && rm -rf /var/lib/apt/lists/*
+    libxss1 && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install version specific packages, if any
 # Added these to handle the packages that are only available for specific platform versions
@@ -91,31 +91,31 @@ FROM base AS ubuntu22.04
 
 RUN apt-get update && \
     apt-get install -y -q --no-install-recommends \
-    libasound2 \
-    && rm -rf /var/lib/apt/lists/*
+    libasound2 && \
+    rm -rf /var/lib/apt/lists/*
 
 FROM base AS ubuntu24.04
 
 RUN apt-get update && \
     apt-get install -y -q --no-install-recommends \
-    libasound2t64 \
-    && rm -rf /var/lib/apt/lists/*
+    libasound2t64 && \
+    rm -rf /var/lib/apt/lists/*
 
 FROM ubuntu${UBUNTU_VERSION} AS php7.3
 
 RUN apt-get update && \
     apt-get install -y -q --no-install-recommends \
     php7.3-json \
-    php7.3-recode \
-    && rm -rf /var/lib/apt/lists/*
+    php7.3-recode && \
+    rm -rf /var/lib/apt/lists/*
 
 FROM ubuntu${UBUNTU_VERSION} AS php7.4
 
 RUN apt-get update && \
-    apt-get install -y -q --no-install-recommends \
-    && apt-get install -y \
-    php7.4-json \
-    && rm -rf /var/lib/apt/lists/*
+    apt-get install -y -q --no-install-recommends && \
+    apt-get install -y \
+    php7.4-json && \
+    rm -rf /var/lib/apt/lists/*
 
 FROM ubuntu${UBUNTU_VERSION} AS php8.1
 
@@ -132,33 +132,33 @@ ARG PHP_VERSION
 
 COPY --chown=embold:embold --chmod=774 coder /coder
 
-RUN cd /coder \
-    && ln -s /coder/conf/embold-mysql.cnf /etc/mysql/conf.d/embold.cnf \
-    && ln -s /coder/conf/embold-php.ini /etc/php/${PHP_VERSION}/mods-available/embold.ini \
-    && cp conf/embold-apache.conf /etc/apache2/conf-available/embold.conf \
-    && sed -i 's/^export APACHE_RUN_USER=.*/export APACHE_RUN_USER=embold/' /etc/apache2/envvars \
-    && sed -i 's/^export APACHE_RUN_GROUP=.*/export APACHE_RUN_GROUP=embold/' /etc/apache2/envvars \
-    && grep -qxF '. /etc/default/locale' /etc/apache2/envvars || echo '. /etc/default/locale' >> /etc/apache2/envvars \
-    && grep -qxF 'export LANG' /etc/apache2/envvars || echo 'export LANG' >> /etc/apache2/envvars \
-    && rsync -a --delete conf/sites-available/ /etc/apache2/sites-available \
+RUN cd /coder && \
+    ln -s /coder/conf/embold-mysql.cnf /etc/mysql/conf.d/embold.cnf && \
+    ln -s /coder/conf/embold-php.ini /etc/php/${PHP_VERSION}/mods-available/embold.ini && \
+    cp conf/embold-apache.conf /etc/apache2/conf-available/embold.conf && \
+    sed -i 's/^export APACHE_RUN_USER=.*/export APACHE_RUN_USER=embold/' /etc/apache2/envvars && \
+    sed -i 's/^export APACHE_RUN_GROUP=.*/export APACHE_RUN_GROUP=embold/' /etc/apache2/envvars && \
+    grep -qxF '. /etc/default/locale' /etc/apache2/envvars || echo '. /etc/default/locale' >> /etc/apache2/envvars && \
+    grep -qxF 'export LANG' /etc/apache2/envvars || echo 'export LANG' >> /etc/apache2/envvars && \
+    rsync -a --delete conf/sites-available/ /etc/apache2/sites-available && \
     # Combine our configure scripts
-    && cat scripts/configure-php >> scripts/configure \
+    cat scripts/configure-php >> scripts/configure && \
     # Enable apache modules and configuration
-    && a2enmod rewrite \
-    && a2enmod headers \
-    && a2enconf embold \
-    && phpenmod -v ALL -s ALL embold \
+    a2enmod rewrite && \
+    a2enmod headers && \
+    a2enconf embold && \
+    phpenmod -v ALL -s ALL embold && \
     # Create our user
-    && adduser embold www-data \
-    && adduser www-data embold \
+    adduser embold www-data && \
+    adduser www-data embold && \
     # Install wp-cli
-    && curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
-    && chmod +x wp-cli.phar \
-    && mv wp-cli.phar /usr/local/bin/wp
+    curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
+    chmod +x wp-cli.phar && \
+    mv wp-cli.phar /usr/local/bin/wp
 
 USER embold
 
-RUN mkdir -p $GEM_HOME \
-    && gem install colorls /coder/pulsar-*.gem --conservative
+RUN mkdir -p $GEM_HOME && \
+    gem install colorls /coder/pulsar-*.gem --conservative
 
 CMD ["/bin/zsh"]
