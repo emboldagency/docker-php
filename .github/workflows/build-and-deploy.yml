@@ -81,4 +81,3 @@ jobs:
           name: ${{ github.ref_name }}
           message: "Uploaded by GitHub Actions. Release notes: https://github.com/emboldagency/docker-php/releases/tag/${{ github.ref_name }}"
           coder_session_token: ${{ secrets.CODER_TOKEN }}
-          dry_run: true
