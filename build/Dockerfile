@@ -2,6 +2,8 @@ ARG UBUNTU_VERSION=24.04 \
     PHP_VERSION=8.3 \
     RUBY_VERSION=3.3.0
 
+FROM ruby:${RUBY_VERSION}-slim AS ruby
+
 FROM emboldcreative/base:ubuntu${UBUNTU_VERSION} AS base
 
 ARG PHP_VERSION \
@@ -13,8 +15,10 @@ ENV BUNDLE_APP_CONFIG=/home/embold/.gems/${RUBY_VERSION} \
 
 USER root
 
-RUN ruby-build ${RUBY_VERSION} /usr/local \
-    && gem update --system \
+# Copy Ruby from the builder stage
+COPY --from=ruby /usr/local /usr/local
+
+RUN gem update --system \
     && chown -R embold:embold /home/embold/.gems
 
 RUN add-apt-repository -y ppa:ondrej/php && \
