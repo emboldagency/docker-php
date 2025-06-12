@@ -17,7 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 <!-- ### Fixed -->
 <!-- ### Security -->
 
-## [v1.6.0](https://github.com/emboldagency/docker-php/tree/v1.6.0) - 2025-06-11
+## [v1.6.0](https://github.com/emboldagency/docker-php/tree/v1.6.0) - 2025-06-12
 
 ### Added
 
@@ -31,7 +31,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - Update terraform providers.
 - Copy ruby from ruby slim image instead of using ruby-build.
 
-[Full Changelog](https://github.com/emboldagency/docker-php/compare/v1.5.0...v1.6.0)
+**Full Changelog**: https://github.com/emboldagency/docker-php/compare/v1.5.0...v1.6.0
 
 ## [v1.5.0](https://github.com/emboldagency/docker-php/tree/v1.5.0) - 2025-03-26
 
@@ -45,7 +45,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - Better error handling for Apache and PHP.
 - Tie template version to Docker image tag.
 
-[Full Changelog](https://github.com/emboldagency/docker-php/compare/v1.4.0...v1.5.0)
+**Full Changelog**: https://github.com/emboldagency/docker-php/compare/v1.4.0...v1.5.0
 
 ## [v1.4.0](https://github.com/emboldagency/docker-php/tree/v1.4.0) - 2024-12-04
 
@@ -53,7 +53,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 - Github CLI token
 
-[Full Changelog](https://github.com/emboldagency/docker-php/compare/v1.3.2...v1.4.0)
+**Full Changelog**: https://github.com/emboldagency/docker-php/compare/v1.3.2...v1.4.0
 
 ## [v1.3.2](https://github.com/emboldagency/docker-php/tree/v1.3.2) - 2024-12-04
 
@@ -62,7 +62,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - Made pulsar magic template param mutable
 - Changed pulsar magic template param color to embold blue
 
-[Full Changelog](https://github.com/emboldagency/docker-php/compare/v1.3.1...v1.3.2)
+**Full Changelog**: https://github.com/emboldagency/docker-php/compare/v1.3.1...v1.3.2
 
 ## [v1.3.1](https://github.com/emboldagency/docker-php/tree/v1.3.1) - 2024-12-03
 
@@ -83,7 +83,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 - Resolved `Dockerfile FromAsCasing` warning
 - Updated GitHub Action versions to address 'save-state' deprecations
 
-[Full Changelog](https://github.com/emboldagency/docker-php/compare/v1.3.0...v1.3.1)
+**Full Changelog**: https://github.com/emboldagency/docker-php/compare/v1.3.0...v1.3.1
 
 ## [v1.3.0](https://github.com/emboldagency/docker-php/tree/v1.3.0) - 2024-11-27
 
@@ -95,7 +95,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 - Capitalize references to Pulsar
 
-[Full Changelog](https://github.com/emboldagency/docker-php/compare/v1.2.1...v1.3.0)
+**Full Changelog**: https://github.com/emboldagency/docker-php/compare/v1.2.1...v1.3.0
 
 ## [v1.2.1](https://github.com/emboldagency/docker-php/tree/v1.2.1) - 2024-08-08
 
@@ -114,7 +114,7 @@ Added manual workflow with job skipping; fixed deprecations; used locals for eas
 
 - Coder template push job
 
-[Full Changelog](https://github.com/emboldagency/docker-php/compare/v1.2.0...v1.2.1)
+**Full Changelog**: https://github.com/emboldagency/docker-php/compare/v1.2.0...v1.2.1
 
 ## [v1.2.0](https://github.com/emboldagency/docker-php/tree/v1.2.0) - 2024-08-07
 
@@ -130,7 +130,7 @@ Added workflows for DockerHub and Coder publishing, php-bcmath for all PHP versi
 - Updated Coder provider
 - Updated default parameter versions
 
-[Full Changelog](https://github.com/emboldagency/docker-php/compare/v1.1.0...v1.2.0)
+**Full Changelog**: https://github.com/emboldagency/docker-php/compare/v1.1.0...v1.2.0
 
 ## [v1.1.0](https://github.com/emboldagency/docker-php/tree/v1.1.0) - 2024-04-08
 
