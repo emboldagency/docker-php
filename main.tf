@@ -31,7 +31,6 @@ data "coder_workspace" "me" {}
 
 data "coder_workspace_owner" "me" {}
 
-
 locals {
   app                   = lower(try(length(local.pulsar_app_name), 0) > 0 ? local.pulsar_app_name : local.workspace_name)
   db_name               = replace(local.app, "-", "_")
@@ -43,7 +42,7 @@ locals {
   php_version           = data.coder_parameter.php_version.value
   pulsar_app_name       = data.coder_parameter.pulsar_app_name.value
   pulsar_magic_template = data.coder_parameter.pulsar_magic_template.value
-  template_version      = data.coder_metadata.template_version.value
+  template_version      = "v1.6.0"
   ubuntu_version        = data.coder_parameter.ubuntu_version.value
   user_email            = data.coder_workspace_owner.me.email
   user_full_name        = coalesce(data.coder_workspace_owner.me.full_name, local.user_username)
@@ -55,12 +54,6 @@ locals {
 
 variable "DOCKER_REGISTRY_PASS" {
   sensitive = true
-}
-
-data "coder_metadata" "template_version" {
-  type        = string
-  description = "The version of the module."
-  value       = "v1.5.0"
 }
 
 data "coder_parameter" "dotfiles_url" {
@@ -127,7 +120,7 @@ data "coder_parameter" "mariadb_version" {
 
 data "coder_parameter" "mariadb_auto_upgrade" {
   name        = "MariaDB Auto Upgrade"
-  description = "Should MariaDB automatically upgrade the database schema? Set this to true if the MariaDB version has changed since the last workspace build."  
+  description = "Should MariaDB automatically upgrade the database schema? Set this to true if the MariaDB version has changed since the last workspace build."
   icon        = "/icon/database.svg"
   type        = "bool"
   default     = false
@@ -169,10 +162,42 @@ resource "coder_agent" "main" {
     GIT_COMMITTER_EMAIL   = local.user_email
     PULSAR_MAGIC_TEMPLATE = local.pulsar_magic_template
   }
+  metadata {
+    display_name = "CPU Usage"
+    key          = "cpu"
+    script       = "coder stat cpu"
+    interval     = 30
+    timeout      = 1
+    order        = 1
+  }
+  metadata {
+    display_name = "Memory Usage"
+    key          = "mem"
+    script       = "coder stat mem --prefix 'Gi' | sed 's/ //;s/iB//'"
+    interval     = 30
+    timeout      = 1
+    order        = 2
+  }
+  metadata {
+    display_name = "Home Volume Size"
+    key          = "home_volume_size"
+    script       = "du -BG --apparent-size /home/embold | tail -1 | awk '{print $1}'" # outputs e.g. 2G
+    interval     = 300
+    timeout      = 30
+    order        = 3
+  }
+  metadata {
+    display_name = "Database Size"
+    key          = "mysql_volume_size"
+    script       = "mariadb -e \"SELECT CONCAT(ROUND(SUM(data_length + index_length) / 1024 / 1024, 2), 'M') AS total_size FROM information_schema.tables;\" 2>/dev/null | grep -v total_size"
+    interval     = 300
+    timeout      = 30
+    order        = 4
+  }
   startup_script = <<-EOT
-        set -e
-        /bin/bash /coder/scripts/configure
-    EOT
+    set -e
+    /bin/bash /coder/scripts/configure
+  EOT
 }
 
 resource "docker_volume" "home_volume" {
@@ -317,18 +342,21 @@ resource "coder_app" "web_app" {
 resource "coder_metadata" "container_info" {
   count       = data.coder_workspace.me.start_count
   resource_id = docker_container.workspace[0].id
-
   item {
-    key   = "image"
-    value = basename(docker_image.php.name)
-  }
-  item {
-    key   = "dev_url"
-    value = local.dev_url
-  }
-  item {
-    key   = "php_version"
+    key   = "PHP"
     value = local.php_version
+  }
+  item {
+    key   = "MariaDB"
+    value = local.mariadb_version
+  }
+  item {
+    key   = "Ubuntu"
+    value = local.ubuntu_version
+  }
+  item {
+    key   = "Image"
+    value = "[${basename(docker_image.php.name)}](https://hub.docker.com/r/${split("/", docker_image.php.name)[0]}/${split(":", split("/", docker_image.php.name)[1])[0]}/tags?name=${split(":", docker_image.php.name)[1]})"
   }
 }
 
