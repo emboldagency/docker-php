@@ -21,13 +21,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 ### Added
 
-- Add browser and image processing dependencies.
+- Browser and image processing dependencies.
+- Metadata for workspace stats, template version, and links.
 
 ### Changed
 
 - Refactor Apache environment variables handling.
 - Use Coder GitHub action instead of custom steps.
 - Update terraform providers.
+- Copy ruby from ruby slim image instead of using ruby-build.
 
 [Full Changelog](https://github.com/emboldagency/docker-php/compare/v1.5.0...v1.6.0)
 
