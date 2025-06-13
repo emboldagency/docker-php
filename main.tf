@@ -189,7 +189,7 @@ resource "coder_agent" "main" {
   metadata {
     display_name = "Database Size"
     key          = "mysql_volume_size"
-    script       = "mariadb -N -e \"SELECT ROUND(SUM(data_length + index_length) / 1024 / 1024 / 1024, 2) FROM information_schema.tables;\" 2>/dev/null | awk '{print $1 \" GiB\"}'"
+    script       = "mariadb -N -e \"SELECT ROUND(SUM(data_length + index_length) / 1024 / 1024 / 1024, 2) FROM information_schema.tables;\" 2>/dev/null | awk '{print $1 \"G\"}'"
     interval     = 300
     timeout      = 30
     order        = 4
