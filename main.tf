@@ -181,7 +181,7 @@ resource "coder_agent" "main" {
   metadata {
     display_name = "Home Volume Size"
     key          = "home_volume_size"
-    script       = "du -BG --apparent-size /home/embold | tail -1 | awk '{print $1}'" # outputs e.g. 2G
+    script       = "du -BG --apparent-size /home/embold | tail -1 | awk '{print $1}'"
     interval     = 300
     timeout      = 30
     order        = 3
@@ -189,7 +189,7 @@ resource "coder_agent" "main" {
   metadata {
     display_name = "Database Size"
     key          = "mysql_volume_size"
-    script       = "mariadb -e \"SELECT CONCAT(ROUND(SUM(data_length + index_length) / 1024 / 1024, 2), 'M') AS total_size FROM information_schema.tables;\" 2>/dev/null | grep -v total_size"
+    script       = "mariadb -N -e \"SELECT ROUND(SUM(data_length + index_length) / 1024 / 1024 / 1024, 2) FROM information_schema.tables;\" 2>/dev/null | awk '{print $1 \" GiB\"}'"
     interval     = 300
     timeout      = 30
     order        = 4
