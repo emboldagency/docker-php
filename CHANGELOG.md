@@ -17,6 +17,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 <!-- ### Fixed -->
 <!-- ### Security -->
 
+## [v1.6.1](https://github.com/emboldagency/docker-php/tree/v1.6.1) - 2025-06-12
+
+### Changed
+
+- Update metadata to show database size in GB
+
+**Full Changelog**: https://github.com/emboldagency/docker-php/compare/v1.6.0...v1.6.1
+
 ## [v1.6.0](https://github.com/emboldagency/docker-php/tree/v1.6.0) - 2025-06-12
 
 ### Added
