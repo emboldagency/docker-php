@@ -15,7 +15,7 @@ ENV BUNDLE_APP_CONFIG=/home/embold/.gems/${RUBY_VERSION} \
 
 USER root
 
-# Copy Ruby from the builder stage
+# --- Copy Ruby from the builder stage ---
 COPY --from=ruby /usr/local /usr/local
 
 RUN gem update --system && \
@@ -25,7 +25,7 @@ RUN add-apt-repository -y ppa:ondrej/php && \
     add-apt-repository -y ppa:ondrej/apache2 && \
     apt-get update && \
     apt-get install -y -q --no-install-recommends \
-    # LAMP
+    # --- LAMP ---
     apache2 \
     dh-php \
     libapache2-mod-php${PHP_VERSION} \
@@ -64,7 +64,7 @@ RUN add-apt-repository -y ppa:ondrej/php && \
     php${PHP_VERSION}-xmlrpc \
     php${PHP_VERSION}-xsl \
     php${PHP_VERSION}-zip \
-    # Browser and image processing dependencies
+    # --- Browser and image processing dependencies ---
     chromium-browser \
     imagemagick \
     libatk-bridge2.0-0 \
@@ -84,8 +84,8 @@ RUN add-apt-repository -y ppa:ondrej/php && \
     libxss1 && \
     rm -rf /var/lib/apt/lists/*
 
-# Install version specific packages, if any
-# Added these to handle the packages that are only available for specific platform versions
+# --- Install version specific packages, if any ---
+# --- Added these to handle the packages that are only available for specific platform versions ---
 
 FROM base AS ubuntu22.04
 
@@ -125,14 +125,18 @@ FROM ubuntu${UBUNTU_VERSION} AS php8.3
 
 FROM ubuntu${UBUNTU_VERSION} AS php8.4
 
-# Final image that combines all the previous layers and sets up the environment
+# --- Final image that combines all the previous layers and sets up the environment ---
 FROM php${PHP_VERSION} AS final
 
 ARG PHP_VERSION
+ARG GH_USERNAME
 
 COPY --chown=embold:embold --chmod=774 coder /coder
 
-RUN cd /coder && \
+RUN --mount=type=secret,id=GH_PACKAGES_TOKEN \
+    GH_PACKAGES_TOKEN=$(cat /run/secrets/GH_PACKAGES_TOKEN) && \
+    # --- Setup Apache, PHP, and site configuration ---
+    cd /coder && \
     ln -s /coder/conf/embold-mysql.cnf /etc/mysql/conf.d/embold.cnf && \
     ln -s /coder/conf/embold-php.ini /etc/php/${PHP_VERSION}/mods-available/embold.ini && \
     cp conf/embold-apache.conf /etc/apache2/conf-available/embold.conf && \
@@ -141,24 +145,32 @@ RUN cd /coder && \
     grep -qxF '. /etc/default/locale' /etc/apache2/envvars || echo '. /etc/default/locale' >> /etc/apache2/envvars && \
     grep -qxF 'export LANG' /etc/apache2/envvars || echo 'export LANG' >> /etc/apache2/envvars && \
     rsync -a --delete conf/sites-available/ /etc/apache2/sites-available && \
-    # Combine our configure scripts
+    # --- Combine our configure scripts ---
     cat scripts/configure-php >> scripts/configure && \
-    # Enable apache modules and configuration
+    # --- Enable apache modules and configuration ---
     a2enmod rewrite && \
     a2enmod headers && \
     a2enconf embold && \
     phpenmod -v ALL -s ALL embold && \
-    # Create our user
+    # --- Create our user ---
     adduser embold www-data && \
     adduser www-data embold && \
-    # Install wp-cli
+    # --- Install wp-cli ---
     curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
     chmod +x wp-cli.phar && \
-    mv wp-cli.phar /usr/local/bin/wp
+    mv wp-cli.phar /usr/local/bin/wp && \
+    # --- Install Ruby gems with GitHub authentication ---
+    mkdir -p /home/embold/.gem && \
+    echo -e "---\n:github: Bearer ${GH_PACKAGES_TOKEN}" > /home/embold/.gem/credentials && \
+    chmod 0600 /home/embold/.gem/credentials && \
+    mkdir -p /home/embold/.gems/${RUBY_VERSION} && \
+    chown -R embold:embold /home/embold/.gem && \
+    su embold -c "gem sources --add https://${GH_USERNAME}:${GH_PACKAGES_TOKEN}@rubygems.pkg.github.com/emboldagency/" && \
+    su embold -c "GEM_HOME=/home/embold/.gems/${RUBY_VERSION} gem install colorls --conservative" && \
+    su embold -c "GEM_HOME=/home/embold/.gems/${RUBY_VERSION} gem install pulsar-embold --source https://rubygems.pkg.github.com/emboldagency --conservative" && \
+    rm -f /home/embold/.gem/credentials && \
+    rm -rf /home/embold/.gems/${RUBY_VERSION}/cache
 
 USER embold
-
-RUN mkdir -p $GEM_HOME && \
-    gem install colorls /coder/pulsar-*.gem --conservative
 
 CMD ["/bin/zsh"]
