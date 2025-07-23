@@ -7,8 +7,8 @@ icon: /icon/docker.png
 
 # PHP
 
-[![Build and Deploy](https://github.com/emboldagency/docker-php/actions/workflows/build-and-deploy.yml/badge.svg)](https://github.com/emboldagency/docker-php/actions/workflows/build-and-deploy.yml) <!--
--->![Semantic Versioning](https://img.shields.io/badge/semver-2.0.0-green?logo=semver)
+[![Build and Deploy](https://embold.net/api/github/badge/workflow-status.php?repo=docker-php)](https://github.com/emboldagency/docker-ruby/actions/workflows/build-and-deploy.yml) <!--
+-->![Semantic Versioning](https://embold.net/api/github/badge/semver.php?repo=docker-php)
 
 # Build Process
 
