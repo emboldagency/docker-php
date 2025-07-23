@@ -56,6 +56,7 @@ data "coder_parameter" "composer_token" {
   default     = ""
   mutable     = true
 }
+
 # data "coder_parameter" "dotfiles_url" {
 #   name        = "dotfiles URL"
 #   description = "GitHub repository with dotfiles"
@@ -63,11 +64,29 @@ data "coder_parameter" "composer_token" {
 #   mutable     = true
 # }
 
+# This is a placeholder for the dotfiles URL parameter provided by the dotfiles module.
+# We can't supply the param, but it must exist or the template will fail.
+
+# variable "dotfiles_uri" {
+#   type    = string
+#   default = null
+# }
+
+# data "coder_parameter" "dotfiles_uri" {
+#   count        = var.dotfiles_uri == null ? 1 : 0
+#   type         = "string"
+#   name         = "dotfiles_uri"
+#   display_name = "Dotfiles URL"
+#   description  = "Enter a URL for a [dotfiles repository](https://dotfiles.github.io) to personalize your workspace"
+#   mutable      = true
+#   icon         = "/icon/dotfiles.svg"
+# }
+
 data "coder_parameter" "git_clone_url" {
   name        = "Git Clone URL"
   description = "The HTTPS version of the Git Repo to clone."
   type        = "string"
-  default     = "https://github.com/emboldagency/example.com"
+  default     = ""
   mutable     = false
 }
 data "coder_parameter" "pulsar_app_name" {
@@ -161,7 +180,7 @@ locals {
   app                   = lower(try(length(local.pulsar_app_name), 0) > 0 ? local.pulsar_app_name : local.workspace_name)
   db_name               = replace(local.app, "-", "_")
   dev_url               = "https://webapp--main--${local.workspace_name}--${local.user_username}.embold.dev"
-  dotfiles_url          = data.coder_parameter.dotfiles_url.value
+  # dotfiles_url          = module.dotfiles[coder_workspace.me[count.index]].dotfiles_uri
   github_token          = data.coder_external_auth.github.access_token
   mariadb_version       = coalesce(data.coder_parameter.mariadb_version.value, "10.11")
   mariadb_auto_upgrade  = data.coder_parameter.mariadb_auto_upgrade.value ? "1" : "0"
@@ -194,7 +213,7 @@ resource "coder_agent" "main" {
     CODER_WORKSPACE_NAME  = local.workspace_name
     CODER_WORKSPACE_PORT  = 443
     DEVURL                = local.dev_url
-    DOTFILES_URL          = local.dotfiles_url
+    # DOTFILES_URL          = try(data.coder_parameter.dotfiles_uri.value, null)
     GIT_AUTHOR_NAME       = local.user_full_name
     GIT_AUTHOR_EMAIL      = local.user_email
     GIT_COMMITTER_NAME    = local.user_full_name
@@ -341,10 +360,12 @@ resource "coder_script" "homebrew" {
 }
 
 module "dotfiles" {
-  agent_id = coder_agent.main.id
-  count    = data.coder_workspace.me.start_count
-  source   = "registry.coder.com/coder/dotfiles/coder"
-  version  = "1.2.0"
+  agent_id             = coder_agent.main.id
+  count                = data.coder_workspace.me.start_count
+  source               = "registry.coder.com/coder/dotfiles/coder"
+  version              = "1.2.1"
+  default_dotfiles_uri = "git@github.com:emboldagency/dotfiles.git"
+  # user = "embold"
 }
 
 # Browsersync
