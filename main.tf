@@ -428,84 +428,84 @@ resource "coder_script" "browsersync" {
 #   EOT
 # }
 
-resource "coder_agent" "db" {
-  arch = data.coder_provisioner.me.arch
-  os   = "linux"
-  startup_script_behavior = "blocking"
-  # env = local.db_type == "mariadb" ? {
-  #   DB_TYPE              = local.db_type
-  #   DB_HOST              = local.db_hostname
-  #   DB_NAME              = local.db_name
-  #   DB_USER              = "embold"
-  #   DB_PASSWORD          = "embold"
-  #   MARIADB_VERSION      = local.db_version
-  #   MARIADB_AUTO_UPGRADE = local.mariadb_auto_upgrade
-  #   } : {
-  #   DB_TYPE          = local.db_type
-  #   DB_HOST          = local.db_hostname
-  #   DB_NAME          = local.db_name
-  #   DB_USER          = "embold"
-  #   DB_PASSWORD      = "embold"
-  #   POSTGRES_VERSION = local.db_version
-  # }
-  # startup_script = <<-EOT
-  #   set -ex
-  #   if [ "${local.db_type}" = "mariadb" ]; then
-  #     echo "Starting MariaDB..."
-  #     docker run --name mysql -e MYSQL_ROOT_PASSWORD=embold -e MYSQL_DATABASE=${local.db_name} -e MYSQL_USER=embold -e MYSQL_PASSWORD=embold -d mariadb:${local.mariadb_version}
-  #   else
-  #     echo "Starting Postgres..."
-  #     docker run --name postgres -e POSTGRES_DB=${local.db_name} -e POSTGRES_USER=embold -e POSTGRES_PASSWORD=embold -d postgres:${local.postgres_version}
-  #   fi
-  #   exit 0
-  # EOT
-  startup_script = <<-EOT
-    set -ex
+# resource "coder_agent" "db" {
+#   arch = data.coder_provisioner.me.arch
+#   os   = "linux"
+#   startup_script_behavior = "blocking"
+#   # env = local.db_type == "mariadb" ? {
+#   #   DB_TYPE              = local.db_type
+#   #   DB_HOST              = local.db_hostname
+#   #   DB_NAME              = local.db_name
+#   #   DB_USER              = "embold"
+#   #   DB_PASSWORD          = "embold"
+#   #   MARIADB_VERSION      = local.db_version
+#   #   MARIADB_AUTO_UPGRADE = local.mariadb_auto_upgrade
+#   #   } : {
+#   #   DB_TYPE          = local.db_type
+#   #   DB_HOST          = local.db_hostname
+#   #   DB_NAME          = local.db_name
+#   #   DB_USER          = "embold"
+#   #   DB_PASSWORD      = "embold"
+#   #   POSTGRES_VERSION = local.db_version
+#   # }
+#   # startup_script = <<-EOT
+#   #   set -ex
+#   #   if [ "${local.db_type}" = "mariadb" ]; then
+#   #     echo "Starting MariaDB..."
+#   #     docker run --name mysql -e MYSQL_ROOT_PASSWORD=embold -e MYSQL_DATABASE=${local.db_name} -e MYSQL_USER=embold -e MYSQL_PASSWORD=embold -d mariadb:${local.mariadb_version}
+#   #   else
+#   #     echo "Starting Postgres..."
+#   #     docker run --name postgres -e POSTGRES_DB=${local.db_name} -e POSTGRES_USER=embold -e POSTGRES_PASSWORD=embold -d postgres:${local.postgres_version}
+#   #   fi
+#   #   exit 0
+#   # EOT
+#   startup_script = <<-EOT
+#     set -ex
 
-    echo "Coder database agent started."
-    exit 0
-  EOT
-  metadata {
-    display_name = "CPU Usage"
-    key          = "cpu"
-    script       = "coder stat cpu"
-    interval     = 30
-    timeout      = 1
-    order        = 1
-  }
-  metadata {
-    display_name = "Memory Usage"
-    key          = "mem"
-    script       = "coder stat mem --prefix 'Gi' | sed 's/ //;s/iB//'"
-    interval     = 30
-    timeout      = 1
-    order        = 2
-  }
-  metadata {
-    display_name = "Database Size"
-    key          = "db_volume_size"
-    script       = local.db_type == "mariadb" ? "mariadb -N -e \"SELECT ROUND(SUM(data_length + index_length) / 1024 / 1024 / 1024, 2) FROM information_schema.tables;\" 2>/dev/null | awk '{print $1 \"G\"}'" : "psql -U embold -d ${local.db_name} -c \"SELECT pg_size_pretty(pg_database_size('${local.db_name}'));\" -t | awk '{print $1}'"
-    interval     = 300
-    timeout      = 30
-    order        = 1
-  }
-  # metadata {
-  #   display_name = "Database Volume Size"
-  #   key          = "db_actual_volume_size"
-  #   script       = local.db_type == "mariadb" ? "du -BG /var/lib/mysql | tail -1 | awk '{print $1}'" : "du -BG /var/lib/postgresql/data | tail -1 | awk '{print $1}'"
-  #   interval     = 300
-  #   timeout      = 30
-  #   order        = 2
-  # }
-  metadata {
-    display_name = "Database Version"
-    key          = "db_version"
-    script       = local.db_type == "mariadb" ? "mariadb --version | awk '{print $3}'" : "psql --version | awk '{print $3}'"
-    interval     = 300
-    timeout      = 10
-    order        = 2
-  }
-}
+#     echo "Coder database agent started."
+#     exit 0
+#   EOT
+#   metadata {
+#     display_name = "CPU Usage"
+#     key          = "cpu"
+#     script       = "coder stat cpu"
+#     interval     = 30
+#     timeout      = 1
+#     order        = 1
+#   }
+#   metadata {
+#     display_name = "Memory Usage"
+#     key          = "mem"
+#     script       = "coder stat mem --prefix 'Gi' | sed 's/ //;s/iB//'"
+#     interval     = 30
+#     timeout      = 1
+#     order        = 2
+#   }
+#   metadata {
+#     display_name = "Database Size"
+#     key          = "db_volume_size"
+#     script       = local.db_type == "mariadb" ? "mariadb -N -e \"SELECT ROUND(SUM(data_length + index_length) / 1024 / 1024 / 1024, 2) FROM information_schema.tables;\" 2>/dev/null | awk '{print $1 \"G\"}'" : "psql -U embold -d ${local.db_name} -c \"SELECT pg_size_pretty(pg_database_size('${local.db_name}'));\" -t | awk '{print $1}'"
+#     interval     = 300
+#     timeout      = 30
+#     order        = 1
+#   }
+#   # metadata {
+#   #   display_name = "Database Volume Size"
+#   #   key          = "db_actual_volume_size"
+#   #   script       = local.db_type == "mariadb" ? "du -BG /var/lib/mysql | tail -1 | awk '{print $1}'" : "du -BG /var/lib/postgresql/data | tail -1 | awk '{print $1}'"
+#   #   interval     = 300
+#   #   timeout      = 30
+#   #   order        = 2
+#   # }
+#   metadata {
+#     display_name = "Database Version"
+#     key          = "db_version"
+#     script       = local.db_type == "mariadb" ? "mariadb --version | awk '{print $3}'" : "psql --version | awk '{print $3}'"
+#     interval     = 300
+#     timeout      = 10
+#     order        = 2
+#   }
+# }
 
 # resource "coder_agent" "redis" {
 #   arch = data.coder_provisioner.me.arch
