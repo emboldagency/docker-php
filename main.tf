@@ -285,6 +285,11 @@ resource "coder_script" "ssh_github_keys" {
       git config --global gpg.format ssh
       git config --global commit.gpgsign true
       git config --global user.signingkey ~/.ssh/coder
+    else
+      # If .ssh already exists, we assume keys are already set up
+      # Fix permissions if needed
+      sudo chmod 0700 /home/embold/.ssh
+      sudo chmod 600 /home/embold/.ssh/*
     fi
     exit 0
   EOT
