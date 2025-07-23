@@ -133,6 +133,8 @@ data "coder_parameter" "php_version" {
     value = "7.4"
   }
 }
+
+# TODO: Conditionally show parameter based on db_type
 data "coder_parameter" "mariadb_version" {
   name        = "MariaDB Version"
   description = "What version of MariaDB? Must match an official mariadb image tag on DockerHub"
@@ -141,6 +143,7 @@ data "coder_parameter" "mariadb_version" {
   default     = "10.11"
   mutable     = true
 }
+# TODO: Conditionally show parameter based on db_type
 data "coder_parameter" "mariadb_auto_upgrade" {
   name        = "MariaDB Auto Upgrade"
   description = "Should MariaDB automatically upgrade the database schema? Set this to true if the MariaDB version has changed since the last workspace build."
@@ -213,7 +216,7 @@ resource "coder_agent" "main" {
     CODER_WORKSPACE_NAME  = local.workspace_name
     CODER_WORKSPACE_PORT  = 443
     DEVURL                = local.dev_url
-    # DOTFILES_URL          = try(data.coder_parameter.dotfiles_uri.value, null)
+    # DOTFILES_URL          = try(data.coder_paramegitter.dotfiles_uri.value, null)
     GIT_AUTHOR_NAME       = local.user_full_name
     GIT_AUTHOR_EMAIL      = local.user_email
     GIT_COMMITTER_NAME    = local.user_full_name
@@ -738,6 +741,7 @@ resource "docker_container" "mysql" {
   }
 }
 
+# TODO: Conditionally show parameter based on db_type
 data "coder_parameter" "postgres_version" {
   name        = "Postgres Version"
   description = "What version of Postgres? Must match an official postgres image tag on DockerHub"
