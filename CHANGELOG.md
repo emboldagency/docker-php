@@ -17,6 +17,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 <!-- ### Fixed -->
 <!-- ### Security -->
 
+## [v1.6.3](https://github.com/emboldagency/docker-php/tree/v1.6.3) - 2025-10-22
+
+## Changed
+
+- Set `PULSAR_APP_NAME`.
+
 ## [v1.6.2](https://github.com/emboldagency/docker-php/tree/v1.6.2) - 2025-06-12
 
 ### Changed
