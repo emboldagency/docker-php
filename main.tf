@@ -296,13 +296,15 @@ resource "docker_container" "workspace" {
   hostname   = local.workspace_name
   entrypoint = ["sh", "-c", replace(coder_agent.main.init_script, "/localhost|127\\.0\\.0\\.1/", "host.docker.internal")]
   env = [
+    "APP=${local.app}",
     "CODER_AGENT_TOKEN=${coder_agent.main.token}",
     "GITHUB_TOKEN=${local.github_token}",
     "HOSTNAME=${local.app}",
     "MYSQL_HOST=mysql",
     "MYSQL_DATABASE=${local.db_name}",
     "MYSQL_USER=embold",
-    "MYSQL_PASSWORD=embold"
+    "MYSQL_PASSWORD=embold",
+    "PULSAR_APP_NAME=${local.pulsar_app_name}"
   ]
   volumes {
     container_path = "/home/embold"
