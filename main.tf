@@ -381,3 +381,12 @@ module "jetbrains_gateway" {
   jetbrains_ides = ["PS"]
   default        = "PS"
 }
+
+module "mailpit" {
+  count             = data.coder_workspace.me.start_count
+  source            = "git::https://github.com/emboldagency/coder-mailpit.git?ref=v1.0.0"
+  agent_id          = coder_agent.main.id
+  docker_network_name = docker_network.workspace[0].name
+  resource_name_base  = "coder-${local.user_username}-${local.workspace_name}"
+  proxy_mappings      = ["18025:mailpit:8025"]
+}
