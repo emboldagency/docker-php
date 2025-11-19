@@ -19,9 +19,9 @@ data "coder_external_auth" "github" {
 
 provider "docker" {
   registry_auth {
-    address  = "registry-1.docker.io"
-    username = "emboldcreative"
-    password = var.DOCKER_REGISTRY_PASS
+    address  = "ghcr.io"
+    username = "emboldagency"
+    password = var.GHP_REGISTRY_PASS
   }
 }
 
@@ -42,7 +42,7 @@ locals {
   php_version           = data.coder_parameter.php_version.value
   pulsar_app_name       = data.coder_parameter.pulsar_app_name.value
   pulsar_magic_template = data.coder_parameter.pulsar_magic_template.value
-  template_version      = "v1.6.3"
+  template_version      = "1.6.3"
   ubuntu_version        = data.coder_parameter.ubuntu_version.value
   user_email            = data.coder_workspace_owner.me.email
   user_full_name        = coalesce(data.coder_workspace_owner.me.full_name, local.user_username)
@@ -53,6 +53,10 @@ locals {
 }
 
 variable "DOCKER_REGISTRY_PASS" {
+  sensitive = true
+}
+
+variable "GHP_REGISTRY_PASS" {
   sensitive = true
 }
 
@@ -280,7 +284,7 @@ resource "docker_container" "mysql" {
 }
 
 data "docker_registry_image" "php" {
-  name = "emboldcreative/php:${local.php_version}-ubuntu${local.ubuntu_version}-${local.template_version}"
+  name = "ghcr.io/emboldagency/php:${local.php_version}-ubuntu${local.ubuntu_version}-release${local.template_version}"
 }
 
 resource "docker_image" "php" {
@@ -358,7 +362,7 @@ resource "coder_metadata" "container_info" {
   }
   item {
     key   = "Image"
-    value = "[${basename(docker_image.php.name)}](https://hub.docker.com/r/${split("/", docker_image.php.name)[0]}/${split(":", split("/", docker_image.php.name)[1])[0]}/tags?name=${split(":", docker_image.php.name)[1]})"
+    value = basename(docker_image.php.name)
   }
 }
 
@@ -383,9 +387,9 @@ module "jetbrains_gateway" {
 }
 
 module "mailpit" {
-  count             = data.coder_workspace.me.start_count
-  source            = "git::https://github.com/emboldagency/coder-mailpit.git?ref=v1.0.0"
-  agent_id          = coder_agent.main.id
+  count               = data.coder_workspace.me.start_count
+  source              = "git::https://github.com/emboldagency/coder-mailpit.git?ref=v1.0.0"
+  agent_id            = coder_agent.main.id
   docker_network_name = docker_network.workspace[0].name
   resource_name_base  = "coder-${local.user_username}-${local.workspace_name}"
   proxy_mappings      = ["18025:mailpit:8025"]

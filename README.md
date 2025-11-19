@@ -15,7 +15,8 @@ icon: /icon/docker.png
 ## Automated Builds
 
 GitHub Actions is configured to:
-- automatically build and push the base images to DockerHub 
+
+- automatically build and push the base images to DockerHub
 - push the updated templates to Coder when a new version tag is created on GitHub
 
 The jobs are defined in [build-and-deploy.yml](.github/workflows/build-and-deploy.yml)
@@ -37,18 +38,34 @@ gh workflow run build-and-deploy.yml --ref $REFERENCE --field skip-jobs=$SKIP_JO
 
 ## Manual Builds
 
+Set the base image version and PHP version
+
 ```bash
-# Set the base image version
 export UBUNTU_VERSION=24.04
-
-# Set the ruby version
 export PHP_VERSION=8.3
+```
 
-# Build the image
-docker build -t emboldcreative/php:${PHP_VERSION}-ubuntu${UBUNTU_VERSION} --build-arg UBUNTU_VERSION=${UBUNTU_VERSION} --build-arg PHP_VERSION=${PHP_VERSION} ./build
+Build the image
 
-# Push the image to the registry
-docker push emboldcreative/php:${PHP_VERSION}-ubuntu${UBUNTU_VERSION}
+```bash
+docker build -t ghcr.io/emboldagency/php:${PHP_VERSION}-ubuntu${UBUNTU_VERSION} --build-arg UBUNTU_VERSION=${UBUNTU_VERSION} --build-arg PHP_VERSION=${PHP_VERSION} ./build
+```
+
+If you are pushing to GHCR, authenticate first.
+
+- The username is the owner of the PAT.
+- The password is in Bitwarden on the `GitHub (Alert/Staging)` entry as `GHCR Token (Write)`.
+
+```bash
+export GHCR_USER="emboldagency"
+export GHCR_TOKEN="<your-ghcr-pat-with-packages-write>"
+echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+```
+
+Push the image to the registry
+
+```bash
+docker push ghcr.io/emboldagency/php:${PHP_VERSION}-ubuntu${UBUNTU_VERSION}
 ```
 
 ## Coder Template Updates
