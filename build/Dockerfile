@@ -11,6 +11,7 @@ ARG PHP_VERSION \
 
 ENV BUNDLE_APP_CONFIG=/home/embold/.gems/${RUBY_VERSION} \
     GEM_HOME=/home/embold/.gems/${RUBY_VERSION} \
+    GEM_PATH=/home/embold/.gem/ruby/${RUBY_VERSION}:/coder/gems/ruby/${RUBY_VERSION} \
     PATH=$PATH:/home/embold/.gems/${RUBY_VERSION}/bin
 
 USER root
@@ -18,7 +19,7 @@ USER root
 # Copy Ruby from the builder stage
 COPY --from=ruby /usr/local /usr/local
 
-RUN gem update --system && \
+RUN mkdir -p /home/embold/.gems && \
     chown -R embold:embold /home/embold/.gems
 
 RUN add-apt-repository -y ppa:ondrej/php && \
@@ -158,7 +159,14 @@ RUN cd /coder && \
 
 USER embold
 
-RUN mkdir -p $GEM_HOME && \
-    gem install colorls /coder/pulsar-*.gem --conservative
+RUN mkdir -p "$GEM_HOME" && \
+    gem install colorls specific_install && \
+    gem specific_install https://github.com/emboldagency/pulsar-embold.git && \
+    # Remove duplicate binstubs that `gem update --system` may have placed in /usr/local/bin
+    rm -f /usr/local/bin/bundle /usr/local/bin/bundler || true && \
+    # Clean gem cache to reduce image size
+    if [ -d "$GEM_HOME/cache" ]; then rm -rf "$GEM_HOME/cache"/* || true; fi && \
+    # Ensure ownership (defense-in-depth)
+    chown -R embold:embold "$GEM_HOME"
 
 CMD ["/bin/zsh"]
