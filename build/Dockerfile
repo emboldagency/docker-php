@@ -1,35 +1,32 @@
-ARG UBUNTU_VERSION=24.04 \ 
-    PHP_VERSION=8.3 \
-    RUBY_VERSION=3.3.0
+ARG UBUNTU_VERSION=24.04
+ARG PHP_VERSION=8.3
+# Use the Ruby compatibility version (major.minor.0) for stable gem paths
+ARG RUBY_VERSION=3.2.0
+# BASE_IMAGE ARG allows overriding to local tags during development
+ARG BASE_IMAGE=ghcr.io/emboldagency/docker-base:ubuntu${UBUNTU_VERSION}
 
-FROM ruby:${RUBY_VERSION}-slim AS ruby
+# -----------------------------------------------------------------------------
+# Base Setup
+# -----------------------------------------------------------------------------
+FROM ${BASE_IMAGE} AS base
 
-FROM ghcr.io/emboldagency/base:ubuntu${UBUNTU_VERSION} AS base
-
-ARG PHP_VERSION \
-    RUBY_VERSION
-
-ENV BUNDLE_APP_CONFIG=/home/embold/.gems/${RUBY_VERSION} \
-    GEM_HOME=/home/embold/.gems/${RUBY_VERSION} \
-    PATH=$PATH:/home/embold/.gems/${RUBY_VERSION}/bin
+ARG PHP_VERSION
 
 USER root
 
-# Copy Ruby from the builder stage
-COPY --from=ruby /usr/local /usr/local
-
-RUN gem update --system && \
-    chown -R embold:embold /home/embold/.gems
-
-RUN add-apt-repository -y ppa:ondrej/php && \
-    add-apt-repository -y ppa:ondrej/apache2 && \
-    apt-get update && \
-    apt-get install -y -q --no-install-recommends \
-    # LAMP
+# Install PHP, Apache, and SSL support
+# We use --mount=type=cache to speed up apt downloads
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    add-apt-repository -y ppa:ondrej/php \
+    && add-apt-repository -y ppa:ondrej/apache2 \
+    && apt-get update \
+    && apt-get install -y -q --no-install-recommends \
+    # The Apache HTTP Server
     apache2 \
-    dh-php \
-    libapache2-mod-php${PHP_VERSION} \
-    mariadb-client \
+    # SSL certificate management (Required for Apache snakeoil certs)
+    ssl-cert \
+    # PHP interpreter and modules
     php${PHP_VERSION} \
     php${PHP_VERSION}-bcmath \
     php${PHP_VERSION}-bz2 \
@@ -64,101 +61,90 @@ RUN add-apt-repository -y ppa:ondrej/php && \
     php${PHP_VERSION}-xmlrpc \
     php${PHP_VERSION}-xsl \
     php${PHP_VERSION}-zip \
-    # Browser and image processing dependencies
-    chromium-browser \
+    # Supporting tools
+    libapache2-mod-php${PHP_VERSION} \
+    mariadb-client \
+    dh-php \
     imagemagick \
-    libatk-bridge2.0-0 \
-    libatk1.0-0 \
-    libcups2 \
-    libdrm2 \
-    libgbm1 \
-    libgtk-3-0 \
     libmagickwand-dev \
-    libnss3 \
-    libpango-1.0-0 \
-    libpangocairo-1.0-0 \
-    libx11-xcb1 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxrandr2 \
-    libxss1 && \
-    rm -rf /var/lib/apt/lists/*
+    # Ruby for Pulsar
+    ruby-full \
+    # Postgres client libraries
+    libpq-dev \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install version specific packages, if any
-# Added these to handle the packages that are only available for specific platform versions
+# -----------------------------------------------------------------------------
+# Platform Specific Logic
+# -----------------------------------------------------------------------------
+FROM base AS php7.4
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update \
+    && apt-get install -y -q --no-install-recommends \
+    php7.4-json \
+    && rm -rf /var/lib/apt/lists/*
 
-FROM base AS ubuntu22.04
+FROM base AS php8.1
+FROM base AS php8.2
+FROM base AS php8.3
+FROM base AS php8.4
 
-RUN apt-get update && \
-    apt-get install -y -q --no-install-recommends \
-    libasound2 && \
-    rm -rf /var/lib/apt/lists/*
-
-FROM base AS ubuntu24.04
-
-RUN apt-get update && \
-    apt-get install -y -q --no-install-recommends \
-    libasound2t64 && \
-    rm -rf /var/lib/apt/lists/*
-
-FROM ubuntu${UBUNTU_VERSION} AS php7.3
-
-RUN apt-get update && \
-    apt-get install -y -q --no-install-recommends \
-    php7.3-json \
-    php7.3-recode && \
-    rm -rf /var/lib/apt/lists/*
-
-FROM ubuntu${UBUNTU_VERSION} AS php7.4
-
-RUN apt-get update && \
-    apt-get install -y -q --no-install-recommends && \
-    apt-get install -y \
-    php7.4-json && \
-    rm -rf /var/lib/apt/lists/*
-
-FROM ubuntu${UBUNTU_VERSION} AS php8.1
-
-FROM ubuntu${UBUNTU_VERSION} AS php8.2
-
-FROM ubuntu${UBUNTU_VERSION} AS php8.3
-
-FROM ubuntu${UBUNTU_VERSION} AS php8.4
-
-# Final image that combines all the previous layers and sets up the environment
+# -----------------------------------------------------------------------------
+# Final Configuration
+# -----------------------------------------------------------------------------
 FROM php${PHP_VERSION} AS final
-
 ARG PHP_VERSION
+ARG RUBY_VERSION
 
-COPY --chown=embold:embold --chmod=774 coder /coder
+# Copy/merge coder folder from this image with /coder from base
+COPY --chown=embold:embold coder /coder
 
-RUN cd /coder && \
-    ln -s /coder/conf/embold-mysql.cnf /etc/mysql/conf.d/embold.cnf && \
-    ln -s /coder/conf/embold-php.ini /etc/php/${PHP_VERSION}/mods-available/embold.ini && \
-    cp conf/embold-apache.conf /etc/apache2/conf-available/embold.conf && \
-    sed -i 's/^export APACHE_RUN_USER=.*/export APACHE_RUN_USER=embold/' /etc/apache2/envvars && \
-    sed -i 's/^export APACHE_RUN_GROUP=.*/export APACHE_RUN_GROUP=embold/' /etc/apache2/envvars && \
-    grep -qxF '. /etc/default/locale' /etc/apache2/envvars || echo '. /etc/default/locale' >> /etc/apache2/envvars && \
-    grep -qxF 'export LANG' /etc/apache2/envvars || echo 'export LANG' >> /etc/apache2/envvars && \
-    rsync -a --delete conf/sites-available/ /etc/apache2/sites-available && \
-    # Combine our configure scripts
-    cat scripts/configure-php >> scripts/configure && \
-    # Enable apache modules and configuration
-    a2enmod rewrite && \
-    a2enmod headers && \
-    a2enconf embold && \
-    phpenmod -v ALL -s ALL embold && \
-    # Create our user
-    adduser embold www-data && \
-    adduser www-data embold && \
-    # Install wp-cli
-    curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
-    chmod +x wp-cli.phar && \
-    mv wp-cli.phar /usr/local/bin/wp
+# Setup Pulsar/Ruby Environment
+RUN mkdir -p "/coder/gems/ruby/${RUBY_VERSION}" \
+    && chown -R embold:embold "/coder/gems"
+
+# Setup envs so gems install into the image
+ENV GEM_HOME=/coder/gems/ruby/${RUBY_VERSION} \
+    PATH=/home/embold/.composer/vendor/bin:/home/embold/.gem/ruby/${RUBY_VERSION}/bin:/coder/gems/ruby/${RUBY_VERSION}/bin:$PATH \
+    PULSAR_CONF_REPO="git@github.com:emboldagency/pulsar.git"
+
+# Setup Configs & Tools
+RUN cd /coder \
+    # --- PHP Configs ---
+    && ln -sf /coder/conf/embold-php.ini /etc/php/${PHP_VERSION}/mods-available/embold.ini \
+    && phpenmod embold \
+    # --- MariaDB Config ---
+    && ln -sf /coder/conf/embold-mysql.cnf /etc/mysql/conf.d/embold.cnf \
+    # --- Apache Config ---
+    && cp conf/embold-apache.conf /etc/apache2/conf-available/embold.conf \
+    && a2enconf embold \
+    # Sync vhosts provided in the build folder
+    && rsync -a --delete conf/sites-available/ /etc/apache2/sites-available/ \
+    # Configure Apache environment
+    && sed -i 's/^export APACHE_RUN_USER=.*/export APACHE_RUN_USER=embold/' /etc/apache2/envvars \
+    && sed -i 's/^export APACHE_RUN_GROUP=.*/export APACHE_RUN_GROUP=embold/' /etc/apache2/envvars \
+    && a2enmod rewrite headers ssl \
+    # --- Users ---
+    && adduser embold www-data \
+    && adduser www-data embold \
+    # --- WP-CLI ---
+    && curl -sO https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
+    && chmod +x wp-cli.phar \
+    && mv wp-cli.phar /usr/local/bin/wp \
+    # --- Composer (Using local script) ---
+    && bash scripts/install-composer.sh \
+    # --- Stable IDE Symlink ---
+    && ln -sf /usr/bin/php${PHP_VERSION} /usr/local/bin/php-ide
 
 USER embold
 
-RUN mkdir -p $GEM_HOME && \
-    gem install colorls /coder/pulsar-*.gem --conservative
+# Gems installed last
+RUN gem install bundler rake specific_install \
+    && gem specific_install https://github.com/emboldagency/pulsar-embold.git \
+    && rm -rf "$GEM_HOME/cache"/* || true
+
+ENV GEM_HOME=/home/embold/.gem/ruby/${RUBY_VERSION} \
+    GEM_PATH=/home/embold/.gem/ruby/${RUBY_VERSION}:/coder/gems/ruby/${RUBY_VERSION}
 
 CMD ["/bin/zsh"]
