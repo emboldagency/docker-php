@@ -366,6 +366,20 @@ resource "coder_metadata" "container_info" {
   }
 }
 
+module "adminer" {
+  count               = data.coder_workspace.me.start_count
+  source              = "git::https://github.com/emboldagency/coder-adminer.git?ref=v1.0.0"
+  agent_id            = coder_agent.main.id
+  docker_network_name = docker_network.workspace[0].name
+  resource_name_base  = "coder-${local.user_username}-${local.workspace_name}"
+  db_server           = "mysql"
+  db_username         = "embold"
+  db_password         = "embold"
+  db_name             = local.db_name
+  db_driver           = "server"
+  proxy_mappings      = ["18080:adminer:8080"]
+}
+
 module "code-server" {
   display_name = "VS Code Web"
   source       = "https://registry.coder.com/modules/code-server"
@@ -375,6 +389,16 @@ module "code-server" {
   settings = {
     "workbench.colorTheme" : "Default Dark Modern"
   }
+}
+
+module "dynamic_services" {
+  # source = "git::https://github.com/emboldagency/coder-dynamic-resources.git?ref=v1.0.0"
+  source              = "git::https://github.com/emboldagency/coder-dynamic-resources.git"
+  count               = data.coder_workspace.me.start_count
+  agent_id            = coder_agent.main.id
+  docker_network_name = docker_network.workspace[0].name
+  resource_name_base  = "coder-${local.user_username}-${local.workspace_name}"
+  order               = 25
 }
 
 module "jetbrains_gateway" {
@@ -393,18 +417,4 @@ module "mailpit" {
   docker_network_name = docker_network.workspace[0].name
   resource_name_base  = "coder-${local.user_username}-${local.workspace_name}"
   proxy_mappings      = ["18025:mailpit:8025"]
-}
-
-module "adminer" {
-  count               = data.coder_workspace.me.start_count
-  source              = "git::https://github.com/emboldagency/coder-adminer.git?ref=v1.0.0"
-  agent_id            = coder_agent.main.id
-  docker_network_name = docker_network.workspace[0].name
-  resource_name_base  = "coder-${local.user_username}-${local.workspace_name}"
-  db_server           = "mysql"
-  db_username         = "embold"
-  db_password         = "embold"
-  db_name             = local.db_name
-  db_driver           = "server"
-  proxy_mappings      = ["18080:adminer:8080"]
 }
