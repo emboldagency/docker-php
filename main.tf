@@ -86,7 +86,7 @@ data "coder_parameter" "pulsar_magic_template" {
 
 data "coder_parameter" "php_version" {
   name        = "PHP Version"
-  description = "Which version of PHP? Must match a emboldcreative/php image tag on DockerHub"
+  description = "Which version of PHP? Must match a [ghcr.io/emboldagency/docker-php](https://github.com/emboldagency/docker-php/pkgs/container/docker-php) image tag."
   icon        = "/icon/php.svg"
   type        = "string"
   default     = "8.3"
@@ -134,7 +134,7 @@ data "coder_parameter" "mariadb_auto_upgrade" {
 
 data "coder_parameter" "ubuntu_version" {
   name        = "Ubuntu Version"
-  description = "Which version of Ubuntu? Must match a emboldcreative/base image tag on DockerHub"
+  description = "Which version of Ubuntu? Must match a [ghcr.io/emboldagency/docker-base](https://github.com/emboldagency/docker-base/pkgs/container/docker-base) image tag]."
   icon        = "/icon/ubuntu.svg"
   type        = "string"
   default     = "24.04"
@@ -143,10 +143,10 @@ data "coder_parameter" "ubuntu_version" {
     name  = "24.04 LTS (Noble)"
     value = "24.04"
   }
-  option {
-    name  = "22.04 LTS (Jammy)"
-    value = "22.04"
-  }
+  # option {
+  #   name  = "22.04 LTS (Jammy)"
+  #   value = "22.04"
+  # }
 }
 
 resource "coder_agent" "main" {
@@ -284,7 +284,7 @@ resource "docker_container" "mysql" {
 }
 
 data "docker_registry_image" "php" {
-  name = "ghcr.io/emboldagency/php:${local.php_version}-ubuntu${local.ubuntu_version}-release${local.template_version}"
+  name = "ghcr.io/emboldagency/docker-php:${local.php_version}-ubuntu${local.ubuntu_version}-release${local.template_version}"
 }
 
 resource "docker_image" "php" {
@@ -392,8 +392,7 @@ module "code-server" {
 }
 
 module "dynamic_services" {
-  # source = "git::https://github.com/emboldagency/coder-dynamic-resources.git?ref=v1.0.0"
-  source              = "git::https://github.com/emboldagency/coder-dynamic-resources.git"
+  source = "git::https://github.com/emboldagency/coder-dynamic-resources.git?ref=v1.0.0"
   count               = data.coder_workspace.me.start_count
   agent_id            = coder_agent.main.id
   docker_network_name = docker_network.workspace[0].name
