@@ -48,7 +48,7 @@ export PHP_VERSION=8.3
 Build the image
 
 ```bash
-docker build -t ghcr.io/emboldagency/php:${PHP_VERSION}-ubuntu${UBUNTU_VERSION} --build-arg UBUNTU_VERSION=${UBUNTU_VERSION} --build-arg PHP_VERSION=${PHP_VERSION} ./build
+docker build -t ghcr.io/emboldagency/docker-php:${PHP_VERSION}-ubuntu${UBUNTU_VERSION} --build-arg UBUNTU_VERSION=${UBUNTU_VERSION} --build-arg PHP_VERSION=${PHP_VERSION} ./build
 ```
 
 If you are pushing to GHCR, authenticate first.
@@ -65,7 +65,7 @@ echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
 Push the image to the registry
 
 ```bash
-docker push ghcr.io/emboldagency/php:${PHP_VERSION}-ubuntu${UBUNTU_VERSION}
+docker push ghcr.io/emboldagency/docker-php:${PHP_VERSION}-ubuntu${UBUNTU_VERSION}
 ```
 
 ## Coder Template Updates

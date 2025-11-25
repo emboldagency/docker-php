@@ -2,8 +2,14 @@ ARG UBUNTU_VERSION=24.04 \
     PHP_VERSION=8.3 \
     RUBY_VERSION=3.3.0
 
+# -----------------------------------------------------------------------------
+# Ruby Builder
+# -----------------------------------------------------------------------------
 FROM ruby:${RUBY_VERSION}-slim AS ruby
 
+# -----------------------------------------------------------------------------
+# Base Setup
+# -----------------------------------------------------------------------------
 FROM ghcr.io/emboldagency/base:ubuntu${UBUNTU_VERSION} AS base
 
 ARG PHP_VERSION \
@@ -19,18 +25,21 @@ USER root
 # Copy Ruby from the builder stage
 COPY --from=ruby /usr/local /usr/local
 
+# Prepare directories
 RUN mkdir -p /home/embold/.gems && \
     chown -R embold:embold /home/embold/.gems
 
-RUN add-apt-repository -y ppa:ondrej/php && \
+# Install PHP and Apache
+# We use --mount=type=cache to speed up apt downloads
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    add-apt-repository -y ppa:ondrej/php && \
     add-apt-repository -y ppa:ondrej/apache2 && \
     apt-get update && \
     apt-get install -y -q --no-install-recommends \
-    # LAMP
-    apache2 \
-    dh-php \
+    # LAMP Stack
+    apache2 dh-php mariadb-client \
     libapache2-mod-php${PHP_VERSION} \
-    mariadb-client \
     php${PHP_VERSION} \
     php${PHP_VERSION}-bcmath \
     php${PHP_VERSION}-bz2 \
@@ -65,16 +74,16 @@ RUN add-apt-repository -y ppa:ondrej/php && \
     php${PHP_VERSION}-xmlrpc \
     php${PHP_VERSION}-xsl \
     php${PHP_VERSION}-zip \
-    # Browser and image processing dependencies
-    chromium-browser \
+    # Image Libraries
     imagemagick \
+    libmagickwand-dev \
+    # Render Libraries (useful for screenshots even with Chrome)
     libatk-bridge2.0-0 \
     libatk1.0-0 \
     libcups2 \
     libdrm2 \
     libgbm1 \
     libgtk-3-0 \
-    libmagickwand-dev \
     libnss3 \
     libpango-1.0-0 \
     libpangocairo-1.0-0 \
@@ -85,25 +94,23 @@ RUN add-apt-repository -y ppa:ondrej/php && \
     libxss1 && \
     rm -rf /var/lib/apt/lists/*
 
-# Install version specific packages, if any
-# Added these to handle the packages that are only available for specific platform versions
+# -----------------------------------------------------------------------------
+# Platform Specific Logic
+# -----------------------------------------------------------------------------
 
 FROM base AS ubuntu22.04
-
 RUN apt-get update && \
     apt-get install -y -q --no-install-recommends \
     libasound2 && \
     rm -rf /var/lib/apt/lists/*
 
 FROM base AS ubuntu24.04
-
 RUN apt-get update && \
     apt-get install -y -q --no-install-recommends \
     libasound2t64 && \
     rm -rf /var/lib/apt/lists/*
 
 FROM ubuntu${UBUNTU_VERSION} AS php7.3
-
 RUN apt-get update && \
     apt-get install -y -q --no-install-recommends \
     php7.3-json \
@@ -111,10 +118,8 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 FROM ubuntu${UBUNTU_VERSION} AS php7.4
-
 RUN apt-get update && \
-    apt-get install -y -q --no-install-recommends && \
-    apt-get install -y \
+    apt-get install -y -q --no-install-recommends \
     php7.4-json && \
     rm -rf /var/lib/apt/lists/*
 
@@ -126,13 +131,16 @@ FROM ubuntu${UBUNTU_VERSION} AS php8.3
 
 FROM ubuntu${UBUNTU_VERSION} AS php8.4
 
-# Final image that combines all the previous layers and sets up the environment
+# -----------------------------------------------------------------------------
+# Final Config
+# -----------------------------------------------------------------------------
 FROM php${PHP_VERSION} AS final
-
 ARG PHP_VERSION
 
+# Copy Coder files LATE to prevent cache busting
 COPY --chown=embold:embold --chmod=774 coder /coder
 
+# Apply Configurations
 RUN cd /coder && \
     ln -s /coder/conf/embold-mysql.cnf /etc/mysql/conf.d/embold.cnf && \
     ln -s /coder/conf/embold-php.ini /etc/php/${PHP_VERSION}/mods-available/embold.ini && \
@@ -144,29 +152,26 @@ RUN cd /coder && \
     rsync -a --delete conf/sites-available/ /etc/apache2/sites-available && \
     # Combine our configure scripts
     cat scripts/configure-php >> scripts/configure && \
-    # Enable apache modules and configuration
-    a2enmod rewrite && \
-    a2enmod headers && \
+    # Enable mods
+    a2enmod rewrite headers && \
     a2enconf embold && \
     phpenmod -v ALL -s ALL embold && \
-    # Create our user
+    # Users
     adduser embold www-data && \
     adduser www-data embold && \
-    # Install wp-cli
+    # WP-CLI
     curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
     chmod +x wp-cli.phar && \
     mv wp-cli.phar /usr/local/bin/wp
 
 USER embold
 
+# Gems installed last as they change frequently
 RUN mkdir -p "$GEM_HOME" && \
     gem install colorls specific_install && \
     gem specific_install https://github.com/emboldagency/pulsar-embold.git && \
-    # Remove duplicate binstubs that `gem update --system` may have placed in /usr/local/bin
     rm -f /usr/local/bin/bundle /usr/local/bin/bundler || true && \
-    # Clean gem cache to reduce image size
     if [ -d "$GEM_HOME/cache" ]; then rm -rf "$GEM_HOME/cache"/* || true; fi && \
-    # Ensure ownership (defense-in-depth)
     chown -R embold:embold "$GEM_HOME"
 
 CMD ["/bin/zsh"]
