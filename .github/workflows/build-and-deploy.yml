@@ -108,14 +108,12 @@ jobs:
 
       # Push Coder Template
       - name: Push Coder Template
-        # MAP SECRET TO ENV VAR:
-        # Coder CLI automatically detects any env var starting with TF_VAR_
-        # and passes it securely to the template build job.
         env:
-          TF_VAR_GHP_REGISTRY_PASS: ${{ secrets.GHCR_TOKEN }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
         run: |
           coder templates push php \
             --directory . \
             --name "${{ github.ref_name }}" \
             --message "Release: ${{ github.ref_name }}" \
+            --var "GHP_REGISTRY_PASS=${GHCR_TOKEN}" \
             --yes
