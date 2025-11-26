@@ -11,11 +11,11 @@ terraform {
   }
 }
 
-provider "coder" {}
+# ------------------------------------------------------------------------------
+# Providers
+# ------------------------------------------------------------------------------
 
-data "coder_external_auth" "github" {
-  id = "github"
-}
+provider "coder" {}
 
 provider "docker" {
   registry_auth {
@@ -25,32 +25,9 @@ provider "docker" {
   }
 }
 
-data "coder_provisioner" "me" {}
-
-data "coder_workspace" "me" {}
-
-data "coder_workspace_owner" "me" {}
-
-locals {
-  app                   = lower(try(length(local.pulsar_app_name), 0) > 0 ? local.pulsar_app_name : local.workspace_name)
-  db_name               = replace(local.app, "-", "_")
-  dev_url               = "https://webapp--main--${local.workspace_name}--${local.user_username}.embold.dev"
-  dotfiles_url          = data.coder_parameter.dotfiles_url.value
-  github_token          = data.coder_external_auth.github.access_token
-  mariadb_version       = data.coder_parameter.mariadb_version.value
-  mariadb_auto_upgrade  = data.coder_parameter.mariadb_auto_upgrade.value ? "1" : "0"
-  php_version           = data.coder_parameter.php_version.value
-  pulsar_app_name       = data.coder_parameter.pulsar_app_name.value
-  pulsar_magic_template = data.coder_parameter.pulsar_magic_template.value
-  template_version      = "1.7.0"
-  ubuntu_version        = data.coder_parameter.ubuntu_version.value
-  user_email            = data.coder_workspace_owner.me.email
-  user_full_name        = coalesce(data.coder_workspace_owner.me.full_name, local.user_username)
-  user_id               = data.coder_workspace_owner.me.id
-  user_username         = lower(data.coder_workspace_owner.me.name)
-  workspace_id          = data.coder_workspace.me.id
-  workspace_name        = lower(data.coder_workspace.me.name)
-}
+# ------------------------------------------------------------------------------
+# Variables (Secrets)
+# ------------------------------------------------------------------------------
 
 variable "DOCKER_REGISTRY_PASS" {
   sensitive = true
@@ -59,6 +36,10 @@ variable "DOCKER_REGISTRY_PASS" {
 variable "GHP_REGISTRY_PASS" {
   sensitive = true
 }
+
+# ------------------------------------------------------------------------------
+# Coder Parameters
+# ------------------------------------------------------------------------------
 
 data "coder_parameter" "dotfiles_url" {
   name        = "dotfiles URL"
@@ -79,7 +60,7 @@ data "coder_parameter" "pulsar_magic_template" {
   name        = "Pulsar Magic Template?"
   description = "Should we use the Pulsar magic template to dynamically build the Pulsar configuration?"
   type        = "bool"
-  icon        = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 576 512'%3E%3C!--!Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--%3E%3Cpath fill='%23009dff' d='M234.7 42.7L197 56.8c-3 1.1-5 4-5 7.2s2 6.1 5 7.2l37.7 14.1L248.8 123c1.1 3 4 5 7.2 5s6.1-2 7.2-5l14.1-37.7L315 71.2c3-1.1 5-4 5-7.2s-2-6.1-5-7.2L277.3 42.7 263.2 5c-1.1-3-4-5-7.2-5s-6.1 2-7.2 5L234.7 42.7zM46.1 395.4c-18.7 18.7-18.7 49.1 0 67.9l34.6 34.6c18.7 18.7 49.1 18.7 67.9 0L529.9 116.5c18.7-18.7 18.7-49.1 0-67.9L495.3 14.1c-18.7-18.7-49.1-18.7-67.9 0L46.1 395.4zM484.6 82.6l-105 105-23.3-23.3 105-105 23.3 23.3zM7.5 117.2C3 118.9 0 123.2 0 128s3 9.1 7.5 10.8L64 160l21.2 56.5c1.7 4.5 6 7.5 10.8 7.5s9.1-3 10.8-7.5L128 160l56.5-21.2c4.5-1.7 7.5-6 7.5-10.8s-3-9.1-7.5-10.8L128 96 106.8 39.5C105.1 35 100.8 32 96 32s-9.1 3-10.8 7.5L64 96 7.5 117.2zm352 256c-4.5 1.7-7.5 6-7.5 10.8s3 9.1 7.5 10.8L416 416l21.2 56.5c1.7 4.5 6 7.5 10.8 7.5s9.1-3 10.8-7.5L480 416l56.5-21.2c4.5-1.7 7.5-6 7.5-10.8s-3-9.1-7.5-10.8L480 352l-21.2-56.5c-1.7-4.5-6-7.5-10.8-7.5s-9.1 3-10.8 7.5L416 352l-56.5 21.2z'/%3E%3C/svg%3E" # font-awesome magic wand. alt: "/emojis/1fa84.png"
+  icon        = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 576 512'%3E%3Cpath fill='%23009dff' d='M234.7 42.7L197 56.8c-3 1.1-5 4-5 7.2s2 6.1 5 7.2l37.7 14.1L248.8 123c1.1 3 4 5 7.2 5s6.1-2 7.2-5l14.1-37.7L315 71.2c3-1.1 5-4 5-7.2s-2-6.1-5-7.2L277.3 42.7 263.2 5c-1.1-3-4-5-7.2-5s-6.1 2-7.2 5L234.7 42.7zM46.1 395.4c-18.7 18.7-18.7 49.1 0 67.9l34.6 34.6c18.7 18.7 49.1 18.7 67.9 0L529.9 116.5c18.7-18.7 18.7-49.1 0-67.9L495.3 14.1c-18.7-18.7-49.1-18.7-67.9 0L46.1 395.4zM484.6 82.6l-105 105-23.3-23.3 105-105 23.3 23.3zM7.5 117.2C3 118.9 0 123.2 0 128s3 9.1 7.5 10.8L64 160l21.2 56.5c1.7 4.5 6 7.5 10.8 7.5s9.1-3 10.8-7.5L128 160l56.5-21.2c4.5-1.7 7.5-6 7.5-10.8s-3-9.1-7.5-10.8L128 96 106.8 39.5C105.1 35 100.8 32 96 32s-9.1 3-10.8 7.5L64 96 7.5 117.2zm352 256c-4.5 1.7-7.5 6-7.5 10.8s3 9.1 7.5 10.8L416 416l21.2 56.5c1.7 4.5 6 7.5 10.8 7.5s9.1-3 10.8-7.5L480 416l56.5-21.2c4.5-1.7 7.5-6 7.5-10.8s-3-9.1-7.5-10.8L480 352l-21.2-56.5c-1.7-4.5-6-7.5-10.8-7.5s-9.1 3-10.8 7.5L416 352l-56.5 21.2z'/%3E%3C/svg%3E" # font-awesome magic wand
   default     = false
   mutable     = true
 }
@@ -149,10 +130,48 @@ data "coder_parameter" "ubuntu_version" {
   # }
 }
 
+# ------------------------------------------------------------------------------
+# Context Data & Locals
+# ------------------------------------------------------------------------------
+
+data "coder_provisioner" "me" {}
+data "coder_workspace" "me" {}
+data "coder_workspace_owner" "me" {}
+
+data "coder_external_auth" "github" {
+  id = "github"
+}
+
+locals {
+  app                   = lower(try(length(local.pulsar_app_name), 0) > 0 ? local.pulsar_app_name : local.workspace_name)
+  db_name               = replace(local.app, "-", "_")
+  dev_url               = "https://webapp--main--${local.workspace_name}--${local.user_username}.embold.dev"
+  dotfiles_url          = data.coder_parameter.dotfiles_url.value
+  github_token          = data.coder_external_auth.github.access_token
+  mariadb_version       = data.coder_parameter.mariadb_version.value
+  mariadb_auto_upgrade  = data.coder_parameter.mariadb_auto_upgrade.value ? "1" : "0"
+  php_version           = data.coder_parameter.php_version.value
+  pulsar_app_name       = data.coder_parameter.pulsar_app_name.value
+  pulsar_magic_template = data.coder_parameter.pulsar_magic_template.value
+  template_version      = "1.7.0"
+  ubuntu_version        = data.coder_parameter.ubuntu_version.value
+  user_email            = data.coder_workspace_owner.me.email
+  user_full_name        = coalesce(data.coder_workspace_owner.me.full_name, local.user_username)
+  user_id               = data.coder_workspace_owner.me.id
+  user_username         = lower(data.coder_workspace_owner.me.name)
+  workspace_id          = data.coder_workspace.me.id
+  workspace_name        = lower(data.coder_workspace.me.name)
+}
+
+# ------------------------------------------------------------------------------
+# Main Resources
+# ------------------------------------------------------------------------------
+
 resource "coder_agent" "main" {
   arch                    = data.coder_provisioner.me.arch
   os                      = "linux"
   startup_script_behavior = "blocking"
+
   env = {
     APP                   = local.app
     CODER_USERNAME        = local.user_username
@@ -166,6 +185,7 @@ resource "coder_agent" "main" {
     GIT_COMMITTER_EMAIL   = local.user_email
     PULSAR_MAGIC_TEMPLATE = local.pulsar_magic_template
   }
+
   metadata {
     display_name = "CPU Usage"
     key          = "cpu"
@@ -174,6 +194,7 @@ resource "coder_agent" "main" {
     timeout      = 1
     order        = 1
   }
+
   metadata {
     display_name = "Memory Usage"
     key          = "mem"
@@ -182,6 +203,7 @@ resource "coder_agent" "main" {
     timeout      = 1
     order        = 2
   }
+
   metadata {
     display_name = "Home Volume Size"
     key          = "home_volume_size"
@@ -190,6 +212,7 @@ resource "coder_agent" "main" {
     timeout      = 30
     order        = 3
   }
+
   metadata {
     display_name = "Database Size"
     key          = "mysql_volume_size"
@@ -198,18 +221,40 @@ resource "coder_agent" "main" {
     timeout      = 30
     order        = 4
   }
+
   startup_script = <<-EOT
     set -e
     /bin/bash /coder/scripts/configure
   EOT
 }
 
+resource "coder_app" "web_app" {
+  agent_id     = coder_agent.main.id
+  display_name = "Web App"
+  slug         = "webapp"
+  icon         = "/emojis/1f310.png"
+  url          = "http://localhost:443"
+  subdomain    = true
+  share        = "public"
+}
+
+# ------------------------------------------------------------------------------
+# Networking & Volumes
+# ------------------------------------------------------------------------------
+
+resource "docker_network" "workspace" {
+  count = data.coder_workspace.me.start_count
+  name  = "coder-${local.user_username}-${local.workspace_name}-network"
+}
+
 resource "docker_volume" "home_volume" {
   name = "coder-${local.user_username}-${local.workspace_name}-${local.workspace_id}-home"
+
   # Protect the volume from being deleted due to changes in attributes.
   lifecycle {
     ignore_changes = all
   }
+
   # Add labels in Docker to keep track of orphan resources.
   labels {
     label = "coder.owner"
@@ -233,10 +278,12 @@ resource "docker_volume" "home_volume" {
 
 resource "docker_volume" "mysql_volume" {
   name = "coder-${local.user_username}-${local.workspace_name}-${local.workspace_id}-mysql"
+
   # Protect the volume from being deleted due to changes in attributes.
   lifecycle {
     ignore_changes = all
   }
+
   # Add labels in Docker to keep track of orphan resources.
   labels {
     label = "coder.owner"
@@ -258,10 +305,9 @@ resource "docker_volume" "mysql_volume" {
   }
 }
 
-resource "docker_network" "workspace" {
-  name  = "coder-${local.user_username}-${local.workspace_name}-network"
-  count = data.coder_workspace.me.start_count
-}
+# ------------------------------------------------------------------------------
+# Containers
+# ------------------------------------------------------------------------------
 
 resource "docker_container" "mysql" {
   count        = data.coder_workspace.me.start_count
@@ -269,6 +315,7 @@ resource "docker_container" "mysql" {
   image        = "mariadb:${local.mariadb_version}"
   hostname     = "mysql"
   network_mode = docker_network.workspace[count.index].name
+
   env = [
     "MYSQL_ROOT_PASSWORD=embold",
     "MYSQL_DATABASE=${local.db_name}",
@@ -276,6 +323,7 @@ resource "docker_container" "mysql" {
     "MYSQL_PASSWORD=embold",
     "MARIADB_AUTO_UPGRADE=${local.mariadb_auto_upgrade}"
   ]
+
   volumes {
     container_path = "/var/lib/mysql"
     volume_name    = docker_volume.mysql_volume.name
@@ -294,11 +342,13 @@ resource "docker_image" "php" {
 }
 
 resource "docker_container" "workspace" {
-  count      = data.coder_workspace.me.start_count
-  image      = docker_image.php.name
-  name       = "coder-${local.user_username}-${local.workspace_name}"
-  hostname   = local.workspace_name
-  entrypoint = ["sh", "-c", replace(coder_agent.main.init_script, "/localhost|127\\.0\\.0\\.1/", "host.docker.internal")]
+  count        = data.coder_workspace.me.start_count
+  name         = "coder-${local.user_username}-${local.workspace_name}"
+  image        = docker_image.php.name
+  hostname     = local.workspace_name
+  entrypoint   = ["sh", "-c", replace(coder_agent.main.init_script, "/localhost|127\\.0\\.0\\.1/", "host.docker.internal")]
+  network_mode = docker_network.workspace[count.index].name
+
   env = [
     "APP=${local.app}",
     "CODER_AGENT_TOKEN=${coder_agent.main.token}",
@@ -310,12 +360,13 @@ resource "docker_container" "workspace" {
     "MYSQL_PASSWORD=embold",
     "PULSAR_APP_NAME=${local.pulsar_app_name}"
   ]
+
   volumes {
     container_path = "/home/embold"
     volume_name    = docker_volume.home_volume.name
     read_only      = false
   }
-  network_mode = docker_network.workspace[count.index].name
+
   # Add labels in Docker to keep track of orphan resources.
   labels {
     label = "coder.owner"
@@ -335,19 +386,10 @@ resource "docker_container" "workspace" {
   }
 }
 
-resource "coder_app" "web_app" {
-  agent_id     = coder_agent.main.id
-  display_name = "Web App"
-  slug         = "webapp"
-  icon         = "/emojis/1f310.png"
-  url          = "http://localhost:443"
-  subdomain    = true
-  share        = "public"
-}
-
 resource "coder_metadata" "container_info" {
   count       = data.coder_workspace.me.start_count
   resource_id = docker_container.workspace[0].id
+
   item {
     key   = "PHP"
     value = local.php_version
@@ -366,9 +408,13 @@ resource "coder_metadata" "container_info" {
   }
 }
 
+# ------------------------------------------------------------------------------
+# Modules
+# ------------------------------------------------------------------------------
+
 module "adminer" {
-  count               = data.coder_workspace.me.start_count
   source              = "git::https://github.com/emboldagency/coder-adminer.git?ref=v1.0.0"
+  count               = data.coder_workspace.me.start_count
   agent_id            = coder_agent.main.id
   docker_network_name = docker_network.workspace[0].name
   resource_name_base  = "coder-${local.user_username}-${local.workspace_name}"
@@ -381,10 +427,10 @@ module "adminer" {
 }
 
 module "code-server" {
-  display_name = "VS Code Web"
   source       = "https://registry.coder.com/modules/code-server"
   agent_id     = coder_agent.main.id
   folder       = "/home/embold/code/${local.app}"
+  display_name = "VS Code Web"
   extensions   = []
   settings = {
     "workbench.colorTheme" : "Default Dark Modern"
@@ -392,7 +438,7 @@ module "code-server" {
 }
 
 module "dynamic_services" {
-  source = "git::https://github.com/emboldagency/coder-dynamic-resources.git?ref=v1.0.0"
+  source              = "git::https://github.com/emboldagency/coder-dynamic-resources.git?ref=v1.0.0"
   count               = data.coder_workspace.me.start_count
   agent_id            = coder_agent.main.id
   docker_network_name = docker_network.workspace[0].name
@@ -410,8 +456,8 @@ module "jetbrains_gateway" {
 }
 
 module "mailpit" {
-  count               = data.coder_workspace.me.start_count
   source              = "git::https://github.com/emboldagency/coder-mailpit.git?ref=v1.0.0"
+  count               = data.coder_workspace.me.start_count
   agent_id            = coder_agent.main.id
   docker_network_name = docker_network.workspace[0].name
   resource_name_base  = "coder-${local.user_username}-${local.workspace_name}"
