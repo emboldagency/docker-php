@@ -111,9 +111,23 @@ jobs:
         env:
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
         run: |
+          echo "Token length: ${#GHCR_TOKEN}"
+          if [ "${#GHCR_TOKEN}" -eq 0 ]; then
+            echo "Error: GHCR_TOKEN secret is empty! Check Repo Settings."
+            exit 1
+          fi
+
+          # 2. Create a temporary tfvars file
+          # This bypasses shell quoting issues completely
+          echo "GHP_REGISTRY_PASS=\"$GHCR_TOKEN\"" > secrets.auto.tfvars
+
+          # 3. Push the template
           coder templates push php \
             --directory . \
             --name "${{ github.ref_name }}" \
             --message "Release: ${{ github.ref_name }}" \
-            --var "GHP_REGISTRY_PASS=${GHCR_TOKEN}" \
+            --activate=false \
             --yes
+          
+          # 4. Cleanup
+          rm secrets.auto.tfvars
