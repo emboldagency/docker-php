@@ -2,11 +2,11 @@ terraform {
   required_providers {
     coder = {
       source  = "coder/coder"
-      version = "~> 2.5.3"
+      version = "~> 2.13.1"
     }
     docker = {
       source  = "kreuzwerker/docker"
-      version = "3.6.1"
+      version = "3.6.2"
     }
   }
 }
@@ -115,10 +115,10 @@ data "coder_parameter" "php_version" {
 
 data "coder_parameter" "mariadb_version" {
   name        = "MariaDB Version"
-  description = "What version of MariaDB? Must match an official mariadb image tag on DockerHub"
+  description = "What version of MariaDB? Must match a [mariadb](https://hub.docker.com/_/mariadb) image tag."
   icon        = "/icon/database.svg"
   type        = "string"
-  default     = "10.11"
+  default     = "12.1"
   mutable     = true
 }
 
