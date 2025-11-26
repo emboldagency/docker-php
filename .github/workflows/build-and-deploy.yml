@@ -99,22 +99,20 @@ jobs:
 
       - name: Push Coder Template
         env:
+          # Map the secret to a shell variable to avoid injection/escaping issues
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
         run: |
+          # Debug: Print length to confirm it's not empty
           echo "Token length: ${#GHCR_TOKEN}"
           if [ "${#GHCR_TOKEN}" -eq 0 ]; then
             echo "Error: GHCR_TOKEN secret is empty! Check Repo Settings."
             exit 1
           fi
 
-          # Create a temporary tfvars file to safely pass the secret
-          echo "GHP_REGISTRY_PASS=\"$GHCR_TOKEN\"" > secrets.auto.tfvars
-
           coder templates push php \
             --directory . \
             --name "${{ github.ref_name }}" \
             --message "Release: ${{ github.ref_name }}" \
+            --var "GHP_REGISTRY_PASS=${GHCR_TOKEN}" \
             --activate=false \
             --yes
-          
-          rm secrets.auto.tfvars
