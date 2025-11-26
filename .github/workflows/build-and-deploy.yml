@@ -65,7 +65,7 @@ jobs:
           tags: |
             # 1. Standard Matrix Tag: 8.3-ubuntu24.04
             type=raw,value=${{ matrix.php_version }}-ubuntu${{ matrix.ubuntu_version }}
-            
+
             # 2. Release Tag: 8.3-ubuntu24.04-release1.7.0
             # Use semver to strip the 'v' from the tag so it matches Terraform
             type=semver,pattern=${{ matrix.php_version }}-ubuntu${{ matrix.ubuntu_version }}-release{{version}}
@@ -99,15 +99,19 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Update Coder Template
-        uses: matifali/update-coder-template@v3
+      # Setup Coder CLI
+      - name: Setup Coder
+        uses: coder/setup-action@v1
         with:
-          id: php
-          dir: .
-          url: https://embold.dev
-          name: ${{ github.ref_name }}
-          message: "Release: ${{ github.ref_name }}"
+          access_url: https://embold.dev
           coder_session_token: ${{ secrets.CODER_TOKEN }}
-          # Inject GHCR token to terraform for pulling private images
-          variables: |
-            GHP_REGISTRY_PASS=${{ secrets.GHCR_TOKEN }}
+
+      # Push Coder Template
+      - name: Push Coder Template
+        run: |
+          coder templates push php \
+            --directory . \
+            --name "${{ github.ref_name }}" \
+            --message "Release: ${{ github.ref_name }}" \
+            --var "GHP_REGISTRY_PASS=${{ secrets.GHCR_TOKEN }}" \
+            --yes
