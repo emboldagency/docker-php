@@ -2,20 +2,20 @@ terraform {
   required_providers {
     coder = {
       source  = "coder/coder"
-      version = "~> 2.5.3"
+      version = "~> 2.13"
     }
     docker = {
       source  = "kreuzwerker/docker"
-      version = "3.6.1"
+      version = "~> 3.6"
     }
   }
 }
 
-provider "coder" {}
+# ------------------------------------------------------------------------------
+# Providers
+# ------------------------------------------------------------------------------
 
-data "coder_external_auth" "github" {
-  id = "github"
-}
+provider "coder" {}
 
 provider "docker" {
   registry_auth {
@@ -25,60 +25,37 @@ provider "docker" {
   }
 }
 
-data "coder_provisioner" "me" {}
-
-data "coder_workspace" "me" {}
-
-data "coder_workspace_owner" "me" {}
-
-locals {
-  app                   = lower(try(length(local.pulsar_app_name), 0) > 0 ? local.pulsar_app_name : local.workspace_name)
-  db_name               = replace(local.app, "-", "_")
-  dev_url               = "https://webapp--main--${local.workspace_name}--${local.user_username}.embold.dev"
-  dotfiles_url          = data.coder_parameter.dotfiles_url.value
-  github_token          = data.coder_external_auth.github.access_token
-  mariadb_version       = data.coder_parameter.mariadb_version.value
-  mariadb_auto_upgrade  = data.coder_parameter.mariadb_auto_upgrade.value ? "1" : "0"
-  php_version           = data.coder_parameter.php_version.value
-  pulsar_app_name       = data.coder_parameter.pulsar_app_name.value
-  pulsar_magic_template = data.coder_parameter.pulsar_magic_template.value
-  template_version      = "v1.6.3"
-  ubuntu_version        = data.coder_parameter.ubuntu_version.value
-  user_email            = data.coder_workspace_owner.me.email
-  user_full_name        = coalesce(data.coder_workspace_owner.me.full_name, local.user_username)
-  user_id               = data.coder_workspace_owner.me.id
-  user_username         = lower(data.coder_workspace_owner.me.name)
-  workspace_id          = data.coder_workspace.me.id
-  workspace_name        = lower(data.coder_workspace.me.name)
-}
-
+# ------------------------------------------------------------------------------
+# Variables
+# ------------------------------------------------------------------------------
 
 variable "GHP_REGISTRY_PASS" {
   sensitive = true
 }
 
-data "coder_parameter" "dotfiles_url" {
-  name        = "dotfiles URL"
-  description = "GitHub repository with dotfiles"
-  mutable     = true
-}
+# ------------------------------------------------------------------------------
+# Coder Parameters
+# ------------------------------------------------------------------------------
+
 
 data "coder_parameter" "pulsar_app_name" {
   name        = "Pulsar App Name"
   description = "What is the Pulsar app name? If this is blank, the workspace name will be used."
-  icon        = "/icon/coder.svg"
+  icon        = "https://api.embold.net/icons/?name=title.svg&color=009dff"
   type        = "string"
   default     = ""
   mutable     = true
+  order       = 1
 }
 
 data "coder_parameter" "pulsar_magic_template" {
   name        = "Pulsar Magic Template?"
   description = "Should we use the Pulsar magic template to dynamically build the Pulsar configuration?"
   type        = "bool"
-  icon        = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 576 512'%3E%3C!--!Font Awesome Free 6.7.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--%3E%3Cpath fill='%23009dff' d='M234.7 42.7L197 56.8c-3 1.1-5 4-5 7.2s2 6.1 5 7.2l37.7 14.1L248.8 123c1.1 3 4 5 7.2 5s6.1-2 7.2-5l14.1-37.7L315 71.2c3-1.1 5-4 5-7.2s-2-6.1-5-7.2L277.3 42.7 263.2 5c-1.1-3-4-5-7.2-5s-6.1 2-7.2 5L234.7 42.7zM46.1 395.4c-18.7 18.7-18.7 49.1 0 67.9l34.6 34.6c18.7 18.7 49.1 18.7 67.9 0L529.9 116.5c18.7-18.7 18.7-49.1 0-67.9L495.3 14.1c-18.7-18.7-49.1-18.7-67.9 0L46.1 395.4zM484.6 82.6l-105 105-23.3-23.3 105-105 23.3 23.3zM7.5 117.2C3 118.9 0 123.2 0 128s3 9.1 7.5 10.8L64 160l21.2 56.5c1.7 4.5 6 7.5 10.8 7.5s9.1-3 10.8-7.5L128 160l56.5-21.2c4.5-1.7 7.5-6 7.5-10.8s-3-9.1-7.5-10.8L128 96 106.8 39.5C105.1 35 100.8 32 96 32s-9.1 3-10.8 7.5L64 96 7.5 117.2zm352 256c-4.5 1.7-7.5 6-7.5 10.8s3 9.1 7.5 10.8L416 416l21.2 56.5c1.7 4.5 6 7.5 10.8 7.5s9.1-3 10.8-7.5L480 416l56.5-21.2c4.5-1.7 7.5-6 7.5-10.8s-3-9.1-7.5-10.8L480 352l-21.2-56.5c-1.7-4.5-6-7.5-10.8-7.5s-9.1 3-10.8 7.5L416 352l-56.5 21.2z'/%3E%3C/svg%3E" # font-awesome magic wand. alt: "/emojis/1fa84.png"
+  icon        = "https://api.embold.net/icons/?name=fas-magic-wand.svg&color=009dff"
   default     = false
   mutable     = true
+  order       = 2
 }
 
 data "coder_parameter" "php_version" {
@@ -88,6 +65,7 @@ data "coder_parameter" "php_version" {
   type        = "string"
   default     = "8.3"
   mutable     = true
+  order       = 3
   option {
     name  = "8.4"
     value = "8.4"
@@ -108,61 +86,107 @@ data "coder_parameter" "php_version" {
     name  = "7.4"
     value = "7.4"
   }
+  validation {
+    regex = "^(8\\.4|8\\.3|8\\.2|8\\.1|7\\.4)$"
+    error = "PHP version must be one of: 8.4, 8.3, 8.2, 8.1, or 7.4. See available versions at https://github.com/emboldagency/docker-php/pkgs/container/docker-php"
+  }
 }
 
 data "coder_parameter" "mariadb_version" {
   name        = "MariaDB Version"
-  description = "What version of MariaDB? Must match an official mariadb image tag on DockerHub"
-  icon        = "/icon/database.svg"
+  description = "What version of MariaDB? Must match a [mariadb](https://hub.docker.com/_/mariadb) image tag."
+  icon        = "https://api.embold.net/icons/?name=mariadb.svg"
   type        = "string"
-  default     = "10.11"
+  default     = "12.1"
   mutable     = true
+  order       = 4
 }
 
 data "coder_parameter" "mariadb_auto_upgrade" {
   name        = "MariaDB Auto Upgrade"
   description = "Should MariaDB automatically upgrade the database schema? Set this to true if the MariaDB version has changed since the last workspace build."
-  icon        = "/icon/database.svg"
+  icon        = "https://api.embold.net/icons/?name=mariadb.svg"
   type        = "bool"
   default     = false
   mutable     = true
-  ephemeral   = true
+  order       = 5
 }
 
 data "coder_parameter" "ubuntu_version" {
   name        = "Ubuntu Version"
-  description = "Which version of Ubuntu? Must match a [ghcr.io/emboldagency/docker-base](https://github.com/emboldagency/docker-base/pkgs/container/docker-base) image tag]."
+  description = "Which version of Ubuntu? Must match an available [docker-base image tag](https://github.com/emboldagency/docker-base/pkgs/container/docker-base)."
   icon        = "/icon/ubuntu.svg"
   type        = "string"
   default     = "24.04"
   mutable     = true
+  order       = 6
   option {
     name  = "24.04 LTS (Noble)"
     value = "24.04"
   }
-  option {
-    name  = "22.04 LTS (Jammy)"
-    value = "22.04"
+  validation {
+    regex = "^(24\\.04)$"
+    error = "Ubuntu version must be 24.04. See available versions at https://github.com/emboldagency/docker-base/pkgs/container/docker-base"
   }
 }
+
+# ------------------------------------------------------------------------------
+# Context Data & Locals
+# ------------------------------------------------------------------------------
+
+data "coder_provisioner" "me" {}
+data "coder_workspace" "me" {}
+data "coder_workspace_owner" "me" {}
+
+data "coder_external_auth" "github" {
+  id = "github"
+}
+
+locals {
+  app                   = lower(try(length(local.pulsar_app_name), 0) > 0 ? local.pulsar_app_name : local.workspace_name)
+  db_name               = replace(local.app, "-", "_")
+  dev_url               = "https://webapp--${local.workspace_name}--${local.user_username}.embold.dev"
+  dotfiles_uri          = try(module.dotfiles.dotfiles_uri, "")
+  github_token          = data.coder_external_auth.github.access_token
+  mariadb_version       = data.coder_parameter.mariadb_version.value
+  mariadb_auto_upgrade  = data.coder_parameter.mariadb_auto_upgrade.value ? "1" : "0"
+  php_version           = data.coder_parameter.php_version.value
+  pulsar_app_name       = data.coder_parameter.pulsar_app_name.value
+  pulsar_magic_template = data.coder_parameter.pulsar_magic_template.value
+  template_version      = "1.7.0"
+  timezone              = coalesce(module.timezone.timezone, "UTC")
+  ubuntu_version        = data.coder_parameter.ubuntu_version.value
+  user_email            = data.coder_workspace_owner.me.email
+  user_full_name        = coalesce(data.coder_workspace_owner.me.full_name, local.user_username)
+  user_id               = data.coder_workspace_owner.me.id
+  user_username         = lower(data.coder_workspace_owner.me.name)
+  workspace_id          = data.coder_workspace.me.id
+  workspace_name        = lower(data.coder_workspace.me.name)
+}
+
+# ------------------------------------------------------------------------------
+# Main Resources
+# ------------------------------------------------------------------------------
 
 resource "coder_agent" "main" {
   arch                    = data.coder_provisioner.me.arch
   os                      = "linux"
   startup_script_behavior = "blocking"
+
   env = {
     APP                   = local.app
     CODER_USERNAME        = local.user_username
     CODER_WORKSPACE_NAME  = local.workspace_name
     CODER_WORKSPACE_PORT  = 443
     DEVURL                = local.dev_url
-    DOTFILES_URL          = local.dotfiles_url
+    DOTFILES_URL          = local.dotfiles_uri
     GIT_AUTHOR_NAME       = local.user_full_name
     GIT_AUTHOR_EMAIL      = local.user_email
     GIT_COMMITTER_NAME    = local.user_full_name
     GIT_COMMITTER_EMAIL   = local.user_email
     PULSAR_MAGIC_TEMPLATE = local.pulsar_magic_template
   }
+
   metadata {
     display_name = "CPU Usage"
     key          = "cpu"
@@ -171,6 +195,7 @@ resource "coder_agent" "main" {
     timeout      = 1
     order        = 1
   }
+
   metadata {
     display_name = "Memory Usage"
     key          = "mem"
@@ -179,6 +204,7 @@ resource "coder_agent" "main" {
     timeout      = 1
     order        = 2
   }
+
   metadata {
     display_name = "Home Volume Size"
     key          = "home_volume_size"
@@ -187,6 +213,7 @@ resource "coder_agent" "main" {
     timeout      = 30
     order        = 3
   }
+
   metadata {
     display_name = "Database Size"
     key          = "mysql_volume_size"
@@ -195,18 +222,42 @@ resource "coder_agent" "main" {
     timeout      = 30
     order        = 4
   }
+
   startup_script = <<-EOT
     set -e
     /bin/bash /coder/scripts/configure
   EOT
 }
 
+resource "coder_app" "web_app" {
+  agent_id     = coder_agent.main.id
+  display_name = "Web App"
+  slug         = "webapp"
+  icon         = "https://api.embold.net/icons/?name=fas-globe.svg&color=009dff"
+  url          = "http://localhost:443"
+  subdomain    = true
+  share        = "public"
+  order        = 1
+  open_in      = "tab"
+}
+
+# ------------------------------------------------------------------------------
+# Networking & Volumes
+# ------------------------------------------------------------------------------
+
+resource "docker_network" "workspace" {
+  count = data.coder_workspace.me.start_count
+  name  = "coder-${local.user_username}-${local.workspace_name}-network"
+}
+
 resource "docker_volume" "home_volume" {
   name = "coder-${local.user_username}-${local.workspace_name}-${local.workspace_id}-home"
+
   # Protect the volume from being deleted due to changes in attributes.
   lifecycle {
     ignore_changes = all
   }
+
   # Add labels in Docker to keep track of orphan resources.
   labels {
     label = "coder.owner"
@@ -230,10 +281,12 @@ resource "docker_volume" "home_volume" {
 
 resource "docker_volume" "mysql_volume" {
   name = "coder-${local.user_username}-${local.workspace_name}-${local.workspace_id}-mysql"
+
   # Protect the volume from being deleted due to changes in attributes.
   lifecycle {
     ignore_changes = all
   }
+
   # Add labels in Docker to keep track of orphan resources.
   labels {
     label = "coder.owner"
@@ -255,10 +308,9 @@ resource "docker_volume" "mysql_volume" {
   }
 }
 
-resource "docker_network" "workspace" {
-  name  = "coder-${local.user_username}-${local.workspace_name}-network"
-  count = data.coder_workspace.me.start_count
-}
+# ------------------------------------------------------------------------------
+# Containers
+# ------------------------------------------------------------------------------
 
 resource "docker_container" "mysql" {
   count        = data.coder_workspace.me.start_count
@@ -266,6 +318,7 @@ resource "docker_container" "mysql" {
   image        = "mariadb:${local.mariadb_version}"
   hostname     = "mysql"
   network_mode = docker_network.workspace[count.index].name
+
   env = [
     "MYSQL_ROOT_PASSWORD=embold",
     "MYSQL_DATABASE=${local.db_name}",
@@ -273,6 +326,7 @@ resource "docker_container" "mysql" {
     "MYSQL_PASSWORD=embold",
     "MARIADB_AUTO_UPGRADE=${local.mariadb_auto_upgrade}"
   ]
+
   volumes {
     container_path = "/var/lib/mysql"
     volume_name    = docker_volume.mysql_volume.name
@@ -281,7 +335,7 @@ resource "docker_container" "mysql" {
 }
 
 data "docker_registry_image" "php" {
-  name = "ghcr.io/emboldagency/docker-php:${local.php_version}-ubuntu${local.ubuntu_version}-release${local.template_version}"
+  name = "ghcr.io/emboldagency/docker-php:${local.php_version}-ubuntu${local.ubuntu_version}-${local.template_version}"
 }
 
 resource "docker_image" "php" {
@@ -291,11 +345,13 @@ resource "docker_image" "php" {
 }
 
 resource "docker_container" "workspace" {
-  count      = data.coder_workspace.me.start_count
-  image      = docker_image.php.name
-  name       = "coder-${local.user_username}-${local.workspace_name}"
-  hostname   = local.workspace_name
-  entrypoint = ["sh", "-c", replace(coder_agent.main.init_script, "/localhost|127\\.0\\.0\\.1/", "host.docker.internal")]
+  count        = data.coder_workspace.me.start_count
+  name         = "coder-${local.user_username}-${local.workspace_name}"
+  image        = docker_image.php.name
+  hostname     = local.workspace_name
+  entrypoint   = ["sh", "-c", replace(coder_agent.main.init_script, "/localhost|127\\.0\\.0\\.1/", "host.docker.internal")]
+  network_mode = docker_network.workspace[count.index].name
+
   env = [
     "APP=${local.app}",
     "CODER_AGENT_TOKEN=${coder_agent.main.token}",
@@ -305,14 +361,16 @@ resource "docker_container" "workspace" {
     "MYSQL_DATABASE=${local.db_name}",
     "MYSQL_USER=embold",
     "MYSQL_PASSWORD=embold",
-    "PULSAR_APP_NAME=${local.pulsar_app_name}"
+    "PULSAR_APP_NAME=${local.pulsar_app_name}",
+    "TZ=${local.timezone}"
   ]
+
   volumes {
     container_path = "/home/embold"
     volume_name    = docker_volume.home_volume.name
     read_only      = false
   }
-  network_mode = docker_network.workspace[count.index].name
+
   # Add labels in Docker to keep track of orphan resources.
   labels {
     label = "coder.owner"
@@ -332,19 +390,10 @@ resource "docker_container" "workspace" {
   }
 }
 
-resource "coder_app" "web_app" {
-  agent_id     = coder_agent.main.id
-  display_name = "Web App"
-  slug         = "webapp"
-  icon         = "/emojis/1f310.png"
-  url          = "http://localhost:443"
-  subdomain    = true
-  share        = "public"
-}
-
 resource "coder_metadata" "container_info" {
   count       = data.coder_workspace.me.start_count
   resource_id = docker_container.workspace[0].id
+
   item {
     key   = "PHP"
     value = local.php_version
@@ -361,17 +410,68 @@ resource "coder_metadata" "container_info" {
     key   = "Image"
     value = basename(docker_image.php.name)
   }
+
+  dynamic "item" {
+    for_each = module.dynamic_services[0].connection_metadata
+    content {
+      key   = "Hostname (custom-${item.value.custom_index}, ${split(":", item.value.image)[0]})"
+      value = item.value.hostname
+    }
+  }
+}
+
+# ------------------------------------------------------------------------------
+# Modules
+# ------------------------------------------------------------------------------
+
+module "adminer" {
+  source              = "git::https://github.com/emboldagency/coder-registry.git//modules/adminer?ref=dev"
+  count               = data.coder_workspace.me.start_count
+  agent_id            = coder_agent.main.id
+  docker_network_name = docker_network.workspace[0].name
+  resource_name_base  = "coder-${local.user_username}-${local.workspace_name}"
+  db_server           = "mysql"
+  db_username         = "embold"
+  db_password         = "embold"
+  db_name             = local.db_name
+  db_driver           = "server"
+  proxy_mappings      = ["18080:adminer:8080"]
 }
 
 module "code-server" {
-  display_name = "VS Code Web"
   source       = "https://registry.coder.com/modules/code-server"
   agent_id     = coder_agent.main.id
   folder       = "/home/embold/code/${local.app}"
+  display_name = "VS Code Web"
   extensions   = []
   settings = {
     "workbench.colorTheme" : "Default Dark Modern"
   }
+}
+
+module "dotfiles" {
+  source          = "git::https://github.com/emboldagency/coder-registry.git//modules/dotfiles?ref=dev"
+  count           = data.coder_workspace.me.start_count
+  agent_id        = coder_agent.main.id
+  user            = "embold"
+  parameter_order = 10 # 3 parameters
+}
+
+module "dynamic_services" {
+  source              = "git::https://github.com/emboldagency/coder-registry.git//modules/dynamic-resources?ref=dev"
+  count               = data.coder_workspace.me.start_count
+  agent_id            = coder_agent.main.id
+  docker_network_name = docker_network.workspace[0].name
+  resource_name_base  = "coder-${local.user_username}-${local.workspace_name}"
+  parameter_order     = 30 # 34 parameters (pushed towards end)
+}
+
+module "home_setup" {
+  source     = "git::https://github.com/emboldagency/coder-registry.git//modules/home-setup?ref=dev"
+  count      = data.coder_workspace.me.start_count
+  agent_id   = coder_agent.main.id
+  source_dir = "/coder/home"
+  target_dir = "/home/embold"
 }
 
 module "jetbrains_gateway" {
@@ -381,4 +481,42 @@ module "jetbrains_gateway" {
   folder         = "/home/embold/code/${local.app}"
   jetbrains_ides = ["PS"]
   default        = "PS"
+}
+
+module "antigravity" {
+  count    = data.coder_workspace.me.start_count
+  source   = "registry.coder.com/coder/antigravity/coder"
+  version  = "1.0.0"
+  agent_id = coder_agent.main.id
+}
+
+module "mailpit" {
+  source              = "git::https://github.com/emboldagency/coder-registry.git//modules/mailpit?ref=dev"
+  count               = data.coder_workspace.me.start_count
+  agent_id            = coder_agent.main.id
+  docker_network_name = docker_network.workspace[0].name
+  resource_name_base  = "coder-${local.user_username}-${local.workspace_name}"
+  proxy_mappings      = ["18025:mailpit:8025"]
+}
+
+module "ssh_setup" {
+  source   = "git::https://github.com/emboldagency/coder-registry.git//modules/ssh-setup?ref=dev"
+  count    = data.coder_workspace.me.start_count
+  agent_id = coder_agent.main.id
+  hosts = [
+    "github.com",
+    "embold.net",
+    "coder.ssh.embold.net:2022",
+    "8.42.149.40:2022",
+    "maintenance.ssh.embold.net:3022",
+    "8.42.149.40:3022",
+    "staging.ssh.embold.net:22",
+    "8.42.149.41:22",
+  ]
+}
+
+module "timezone" {
+  source          = "git::https://github.com/emboldagency/coder-registry.git//modules/timezone?ref=dev"
+  agent_id        = coder_agent.main.id
+  parameter_order = 7 # 1 parameter
 }
