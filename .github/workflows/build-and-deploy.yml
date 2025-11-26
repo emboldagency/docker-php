@@ -1,4 +1,4 @@
-name: Build and Deploy
+name: Build and Deploy PHP
 
 on:
   push:
@@ -12,72 +12,110 @@ on:
         required: false
         default: ""
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  # Define the "Golden Path" version that gets the 'latest' tag
+  LATEST_UBUNTU: "24.04"
+  LATEST_PHP: "8.3"
+
 jobs:
   initialization:
     runs-on: ubuntu-latest
     outputs:
-      skip-build-and-push-docker: ${{ steps.set-skip-build-and-push-docker.outputs.skip }}
+      skip-build: ${{ steps.check.outputs.skip }}
     steps:
-      - name: Determine Jobs to Skip
-        id: set-skip-build-and-push-docker
+      - id: check
         run: |
           if [[ "${{ github.event.inputs['skip-jobs'] }}" == *"build-and-push-docker"* ]]; then
-            echo "skip=true" >> $GITHUB_ENV
+            echo "skip=true" >> $GITHUB_OUTPUT
           else
-            echo "skip=false" >> $GITHUB_ENV
+            echo "skip=false" >> $GITHUB_OUTPUT
           fi
 
   build-and-push-docker:
-    if: ${{ !contains(github.event.inputs['skip-jobs'], 'build-and-push-docker') }}
-    runs-on: ubuntu-latest
     needs: initialization
+    if: needs.initialization.outputs.skip-build != 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     strategy:
+      fail-fast: false # Don't stop all jobs if one PHP version fails
       matrix:
         php_version: ["8.4", "8.3", "8.2", "8.1", "7.4"]
-        ubuntu_version: ["24.04", "22.04"]
+        ubuntu_version: ["24.04"]
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to Docker Hub
+      - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_USER }}
-          password: ${{ secrets.DOCKER_TOKEN }}
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            # 1. Standard Matrix Tag: 8.3-ubuntu24.04
+            type=raw,value=${{ matrix.php_version }}-ubuntu${{ matrix.ubuntu_version }}
+
+            # 2. Release Tag: 8.3-ubuntu24.04-release1.7.0
+            # Use semver to strip the 'v' from the tag so it matches Terraform
+            type=semver,pattern=${{ matrix.php_version }}-ubuntu${{ matrix.ubuntu_version }}-release{{version}}
+
+            # 3. Global "latest" (Only for the golden path combination)
+            type=raw,value=latest,enable=${{ matrix.php_version == env.LATEST_PHP && matrix.ubuntu_version == env.LATEST_UBUNTU }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v6
         with:
           context: ./build
-          file: ./build/Dockerfile
           push: true
-          tags: |
-            ${{ secrets.DOCKER_USER }}/php:${{ matrix.php_version }}-ubuntu${{ matrix.ubuntu_version }}-${{ github.ref_name }}
-            ${{ secrets.DOCKER_USER }}/php:${{ matrix.php_version }}-ubuntu${{ matrix.ubuntu_version }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             PHP_VERSION=${{ matrix.php_version }}
             UBUNTU_VERSION=${{ matrix.ubuntu_version }}
+          # Matrix-Scoped Caching
+          cache-from: type=gha,scope=php-${{ matrix.php_version }}-ubuntu-${{ matrix.ubuntu_version }}
+          cache-to: type=gha,mode=max,scope=php-${{ matrix.php_version }}-ubuntu-${{ matrix.ubuntu_version }}
 
   update-coder-template:
-    # Conditional execution based on skip-jobs input and initialization job output
-    # Only runs if skip-jobs does not contain 'update-coder-template'
-    # OR build-and-push-docker job is successful
-    if: ${{ !contains(github.event.inputs['skip-jobs'], 'update-coder-template') || needs.initialization.outputs.skip-build-and-push-docker == 'true' || success() }}
-    runs-on: ubuntu-latest
     needs: [initialization, build-and-push-docker]
+    # Logic: Run if NOT skipped AND (Init said skip build OR build succeeded)
+    if: ${{ !contains(github.event.inputs['skip-jobs'], 'update-coder-template') && (needs.initialization.outputs.skip-build == 'true' || needs.build-and-push-docker.result == 'success') }}
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Update Coder Template
-        uses: matifali/update-coder-template@v3
+      # Setup Coder CLI
+      - name: Setup Coder
+        uses: coder/setup-action@v1
         with:
-          id: php
-          dir: .
-          url: https://embold.dev
-          name: ${{ github.ref_name }}
-          message: "Uploaded by GitHub Actions. Release notes: https://github.com/emboldagency/docker-php/releases/tag/${{ github.ref_name }}"
+          access_url: https://embold.dev
           coder_session_token: ${{ secrets.CODER_TOKEN }}
+
+      # Push Coder Template
+      - name: Push Coder Template
+        # MAP SECRET TO ENV VAR:
+        # Coder CLI automatically detects any env var starting with TF_VAR_
+        # and passes it securely to the template build job.
+        env:
+          TF_VAR_GHP_REGISTRY_PASS: ${{ secrets.GHCR_TOKEN }}
+        run: |
+          coder templates push php \
+            --directory . \
+            --name "${{ github.ref_name }}" \
+            --message "Release: ${{ github.ref_name }}" \
+            --yes
