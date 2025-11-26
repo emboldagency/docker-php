@@ -7,9 +7,6 @@ icon: /icon/docker.png
 
 # PHP
 
-[![Build and Deploy](https://github.com/emboldagency/docker-php/actions/workflows/build-and-deploy.yml/badge.svg)](https://github.com/emboldagency/docker-php/actions/workflows/build-and-deploy.yml) <!--
--->![Semantic Versioning](https://img.shields.io/badge/semver-2.0.0-green?logo=semver)
-
 # Build Process
 
 ## Automated Builds
@@ -37,6 +34,16 @@ gh workflow run build-and-deploy.yml --ref $REFERENCE --field skip-jobs=$SKIP_JO
 ```
 
 ## Manual Builds
+
+### Using the Build Script (Recommended)
+
+For local development and testing, use the included helper script. It prompts for the Ubuntu & PHP versions and an optional tag suffix, then runs the build with the correct arguments.
+
+```bash
+./build_image.sh
+```
+
+### Using Docker CLI
 
 Set the base image version and PHP version
 
