@@ -2,8 +2,9 @@ name: Build and Deploy PHP
 
 on:
   push:
+    branches: # Added this to keep cache warm on main commits
+      - main
     tags:
-      # Match a tag with the format v1.0.0
       - "v[0-9]+.[0-9]+.[0-9]"
   workflow_dispatch:
     inputs:
@@ -15,7 +16,6 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  # Define the "Golden Path" version that gets the 'latest' tag
   LATEST_UBUNTU: "24.04"
   LATEST_PHP: "8.3"
 
@@ -41,7 +41,7 @@ jobs:
       contents: read
       packages: write
     strategy:
-      fail-fast: false # Don't stop all jobs if one PHP version fails
+      fail-fast: false
       matrix:
         php_version: ["8.4", "8.3", "8.2", "8.1", "7.4"]
         ubuntu_version: ["24.04"]
@@ -63,14 +63,8 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            # 1. Standard Matrix Tag: 8.3-ubuntu24.04
             type=raw,value=${{ matrix.php_version }}-ubuntu${{ matrix.ubuntu_version }}
-
-            # 2. Release Tag: 8.3-ubuntu24.04-release1.7.0
-            # Use semver to strip the 'v' from the tag so it matches Terraform
             type=semver,pattern=${{ matrix.php_version }}-ubuntu${{ matrix.ubuntu_version }}-release{{version}}
-
-            # 3. Global "latest" (Only for the golden path combination)
             type=raw,value=latest,enable=${{ matrix.php_version == env.LATEST_PHP && matrix.ubuntu_version == env.LATEST_UBUNTU }}
 
       - name: Set up Docker Buildx
@@ -86,27 +80,23 @@ jobs:
           build-args: |
             PHP_VERSION=${{ matrix.php_version }}
             UBUNTU_VERSION=${{ matrix.ubuntu_version }}
-          # Matrix-Scoped Caching
           cache-from: type=gha,scope=php-${{ matrix.php_version }}-ubuntu-${{ matrix.ubuntu_version }}
           cache-to: type=gha,mode=max,scope=php-${{ matrix.php_version }}-ubuntu-${{ matrix.ubuntu_version }}
 
   update-coder-template:
     needs: [initialization, build-and-push-docker]
-    # Logic: Run if NOT skipped AND (Init said skip build OR build succeeded)
-    if: ${{ !contains(github.event.inputs['skip-jobs'], 'update-coder-template') && (needs.initialization.outputs.skip-build == 'true' || needs.build-and-push-docker.result == 'success') }}
+    if: ${{ !cancelled() && !contains(github.event.inputs['skip-jobs'], 'update-coder-template') && (needs.initialization.outputs.skip-build == 'true' || needs.build-and-push-docker.result == 'success') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Setup Coder CLI
       - name: Setup Coder
         uses: coder/setup-action@v1
         with:
           access_url: https://embold.dev
           coder_session_token: ${{ secrets.CODER_TOKEN }}
 
-      # Push Coder Template
       - name: Push Coder Template
         env:
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
@@ -117,11 +107,9 @@ jobs:
             exit 1
           fi
 
-          # 2. Create a temporary tfvars file
-          # This bypasses shell quoting issues completely
+          # Create a temporary tfvars file to safely pass the secret
           echo "GHP_REGISTRY_PASS=\"$GHCR_TOKEN\"" > secrets.auto.tfvars
 
-          # 3. Push the template
           coder templates push php \
             --directory . \
             --name "${{ github.ref_name }}" \
@@ -129,5 +117,4 @@ jobs:
             --activate=false \
             --yes
           
-          # 4. Cleanup
           rm secrets.auto.tfvars
