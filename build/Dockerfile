@@ -1,29 +1,20 @@
 ARG UBUNTU_VERSION=24.04 \ 
-    PHP_VERSION=8.3 \
-    RUBY_VERSION=3.3.0
-
-# -----------------------------------------------------------------------------
-# Ruby Builder
-# -----------------------------------------------------------------------------
-FROM ruby:${RUBY_VERSION}-slim AS ruby
+    PHP_VERSION=8.3
 
 # -----------------------------------------------------------------------------
 # Base Setup
 # -----------------------------------------------------------------------------
 FROM ghcr.io/emboldagency/docker-base:ubuntu${UBUNTU_VERSION} AS base
 
-ARG PHP_VERSION \
-    RUBY_VERSION
+ARG PHP_VERSION
 
-ENV BUNDLE_APP_CONFIG=/home/embold/.gems/${RUBY_VERSION} \
-    GEM_HOME=/home/embold/.gems/${RUBY_VERSION} \
-    GEM_PATH=/home/embold/.gem/ruby/${RUBY_VERSION}:/coder/gems/ruby/${RUBY_VERSION} \
-    PATH=$PATH:/home/embold/.gems/${RUBY_VERSION}/bin
+ENV GEM_HOME=/home/embold/.gems \
+    PATH=/home/embold/.gems/bin:$PATH \
+    BUNDLE_DISABLE_SHARED_GEMS=1 \
+    BUNDLE_SILENCE_ROOT_WARNING=1 \
+    PULSAR_CONF_REPO="git@github.com:emboldagency/pulsar.git"
 
 USER root
-
-# Copy Ruby from the builder stage
-COPY --from=ruby /usr/local /usr/local
 
 # Prepare directories
 RUN mkdir -p /home/embold/.gems && \
@@ -77,6 +68,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     # Image Libraries
     imagemagick \
     libmagickwand-dev \
+    # Ruby
+    ruby-full \
     # Render Libraries (useful for screenshots even with Chrome)
     libatk-bridge2.0-0 \
     libatk1.0-0 \
@@ -167,11 +160,10 @@ RUN cd /coder && \
 USER embold
 
 # Gems installed last as they change frequently
-RUN mkdir -p "$GEM_HOME" && \
-    gem install colorls specific_install && \
+RUN gem install bundler colorls specific_install && \
     gem specific_install https://github.com/emboldagency/pulsar-embold.git && \
-    rm -f /usr/local/bin/bundle /usr/local/bin/bundler || true && \
+    # Cleanup
     if [ -d "$GEM_HOME/cache" ]; then rm -rf "$GEM_HOME/cache"/* || true; fi && \
-    chown -R embold:embold "$GEM_HOME"
+    true
 
 CMD ["/bin/zsh"]
