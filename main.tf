@@ -433,6 +433,21 @@ module "code-server" {
   }
 }
 
+module "dotfiles" {
+  source       = "registry.coder.com/coder/dotfiles/coder"
+  agent_id     = coder_agent.main.id
+  version      = "1.2.1"
+  dotfiles_uri = local.dotfiles_url
+}
+
+module "dotfiles_link" {
+  source       = "git::https://github.com/emboldagency/coder-link-dotfiles.git?ref=v1.0.0"
+  count        = data.coder_workspace.me.start_count
+  agent_id     = coder_agent.main.id
+  depends_on   = [module.dotfiles] # Ensure dotfiles are created before we try to link/copy them
+  dotfiles_uri = local.dotfiles_url
+}
+
 module "dynamic_services" {
   source              = "git::https://github.com/emboldagency/coder-dynamic-resources.git?ref=v1.0.0"
   count               = data.coder_workspace.me.start_count
@@ -440,6 +455,14 @@ module "dynamic_services" {
   docker_network_name = docker_network.workspace[0].name
   resource_name_base  = "coder-${local.user_username}-${local.workspace_name}"
   order               = 25
+}
+
+module "home_setup" {
+  source     = "git::https://github.com/emboldagency/coder-home-setup.git?ref=v1.0.0"
+  count      = data.coder_workspace.me.start_count
+  agent_id   = coder_agent.main.id
+  source_dir = "/coder/home"
+  target_dir = "/home/embold"
 }
 
 module "jetbrains_gateway" {
@@ -458,4 +481,25 @@ module "mailpit" {
   docker_network_name = docker_network.workspace[0].name
   resource_name_base  = "coder-${local.user_username}-${local.workspace_name}"
   proxy_mappings      = ["18025:mailpit:8025"]
+}
+
+module "ssh_setup" {
+  source   = "git::https://github.com/emboldagency/coder-ssh-setup.git?ref=v1.0.0"
+  count    = data.coder_workspace.me.start_count
+  agent_id = coder_agent.main.id
+  hosts = [
+    "github.com",
+    "embold.net",
+    "coder.ssh.embold.net:2022",
+    "8.42.149.40:2022",
+    "maintenance.ssh.embold.net:3022",
+    "8.42.149.40:3022",
+    "staging.ssh.embold.net:22",
+    "8.42.149.41:22",
+  ]
+}
+
+module "timezone" {
+  source   = "git::https://github.com/emboldagency/coder-timezone.git?ref=v1.0.0"
+  agent_id = coder_agent.main.id
 }
