@@ -66,10 +66,10 @@ echo
 # We use DOCKER_BUILDKIT=1 for caching
 # We point to build/Dockerfile but use the ROOT context (.) to match GHA
 DOCKER_BUILDKIT=1 docker build -t "$FULL_IMAGE_TAG" \
-    --build-arg UBUNTU_VERSION="${UBUNTU_VERSION}" \
-    --build-arg PHP_VERSION="${PHP_VERSION}" \
-    --target final \
-    ./build
+	--build-arg UBUNTU_VERSION="${UBUNTU_VERSION}" \
+	--build-arg PHP_VERSION="${PHP_VERSION}" \
+	--target final \
+	./build
 
 echo
 echo_success "Build Complete!"
