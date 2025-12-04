@@ -90,6 +90,27 @@ data "coder_parameter" "php_version" {
   }
 }
 
+data "coder_parameter" "database_type" {
+  name        = "Database Type"
+  description = "Which database system to use?"
+  icon        = "/icon/database.svg"
+  type        = "string"
+  default     = "mariadb"
+  mutable     = true
+  option {
+    name  = "MariaDB"
+    value = "mariadb"
+  }
+  option {
+    name  = "PostgreSQL"
+    value = "postgres"
+  }
+  option {
+    name  = "None"
+    value = "none"
+  }
+}
+
 data "coder_parameter" "mariadb_version" {
   name        = "MariaDB Version"
   description = "What version of MariaDB? Must match a [mariadb](https://hub.docker.com/_/mariadb) image tag."
@@ -107,6 +128,35 @@ data "coder_parameter" "mariadb_auto_upgrade" {
   default     = false
   mutable     = true
   ephemeral   = true
+}
+
+data "coder_parameter" "postgres_version" {
+  name        = "PostgreSQL Version"
+  description = "What version of PostgreSQL? Must match a [postgres](https://hub.docker.com/_/postgres) image tag."
+  icon        = "/icon/database.svg"
+  type        = "string"
+  default     = "16"
+  mutable     = true
+  option {
+    name  = "17"
+    value = "17"
+  }
+  option {
+    name  = "16"
+    value = "16"
+  }
+  option {
+    name  = "15"
+    value = "15"
+  }
+  option {
+    name  = "14"
+    value = "14"
+  }
+  option {
+    name  = "13"
+    value = "13"
+  }
 }
 
 data "coder_parameter" "ubuntu_version" {
@@ -141,12 +191,14 @@ data "coder_external_auth" "github" {
 locals {
   app                   = lower(try(length(local.pulsar_app_name), 0) > 0 ? local.pulsar_app_name : local.workspace_name)
   db_name               = replace(local.app, "-", "_")
+  database_type         = data.coder_parameter.database_type.value
   dev_url               = "https://webapp--main--${local.workspace_name}--${local.user_username}.embold.dev"
   dotfiles_url          = data.coder_parameter.dotfiles_url.value
   github_token          = data.coder_external_auth.github.access_token
   mariadb_version       = data.coder_parameter.mariadb_version.value
   mariadb_auto_upgrade  = data.coder_parameter.mariadb_auto_upgrade.value ? "1" : "0"
   php_version           = data.coder_parameter.php_version.value
+  postgres_version      = data.coder_parameter.postgres_version.value
   pulsar_app_name       = data.coder_parameter.pulsar_app_name.value
   pulsar_magic_template = data.coder_parameter.pulsar_magic_template.value
   template_version      = "1.7.0"
@@ -272,8 +324,9 @@ resource "docker_volume" "home_volume" {
   }
 }
 
-resource "docker_volume" "mysql_volume" {
-  name = "coder-${local.user_username}-${local.workspace_name}-${local.workspace_id}-mysql"
+resource "docker_volume" "database_volume" {
+  count = local.database_type != "none" ? 1 : 0
+  name  = "coder-${local.user_username}-${local.workspace_name}-${local.workspace_id}-database"
 
   # Protect the volume from being deleted due to changes in attributes.
   lifecycle {
@@ -293,6 +346,10 @@ resource "docker_volume" "mysql_volume" {
     label = "coder.workspace_id"
     value = local.workspace_id
   }
+  labels {
+    label = "coder.database_type"
+    value = local.database_type
+  }
   # This field becomes outdated if the workspace is renamed but can
   # be useful for debugging or cleaning out dangling volumes.
   labels {
@@ -306,11 +363,11 @@ resource "docker_volume" "mysql_volume" {
 # ------------------------------------------------------------------------------
 
 resource "docker_container" "mysql" {
-  count        = data.coder_workspace.me.start_count
+  count        = local.database_type == "mariadb" && data.coder_workspace.me.start_count > 0 ? 1 : 0
   name         = "coder-${local.user_username}-${local.workspace_name}-mysql"
   image        = "mariadb:${local.mariadb_version}"
   hostname     = "mysql"
-  network_mode = docker_network.workspace[count.index].name
+  network_mode = docker_network.workspace[0].name
 
   env = [
     "MYSQL_ROOT_PASSWORD=embold",
@@ -322,7 +379,27 @@ resource "docker_container" "mysql" {
 
   volumes {
     container_path = "/var/lib/mysql"
-    volume_name    = docker_volume.mysql_volume.name
+    volume_name    = docker_volume.database_volume[0].name
+    read_only      = false
+  }
+}
+
+resource "docker_container" "postgres" {
+  count        = local.database_type == "postgres" && data.coder_workspace.me.start_count > 0 ? 1 : 0
+  name         = "coder-${local.user_username}-${local.workspace_name}-postgres"
+  image        = "postgres:${local.postgres_version}"
+  hostname     = "postgres"
+  network_mode = docker_network.workspace[0].name
+
+  env = [
+    "POSTGRES_DB=${local.db_name}",
+    "POSTGRES_USER=embold",
+    "POSTGRES_PASSWORD=embold"
+  ]
+
+  volumes {
+    container_path = "/var/lib/postgresql/data"
+    volume_name    = docker_volume.database_volume[0].name
     read_only      = false
   }
 }
@@ -345,17 +422,27 @@ resource "docker_container" "workspace" {
   entrypoint   = ["sh", "-c", replace(coder_agent.main.init_script, "/localhost|127\\.0\\.0\\.1/", "host.docker.internal")]
   network_mode = docker_network.workspace[count.index].name
 
-  env = [
-    "APP=${local.app}",
-    "CODER_AGENT_TOKEN=${coder_agent.main.token}",
-    "GITHUB_TOKEN=${local.github_token}",
-    "HOSTNAME=${local.app}",
-    "MYSQL_HOST=mysql",
-    "MYSQL_DATABASE=${local.db_name}",
-    "MYSQL_USER=embold",
-    "MYSQL_PASSWORD=embold",
-    "PULSAR_APP_NAME=${local.pulsar_app_name}"
-  ]
+  env = concat(
+    [
+      "APP=${local.app}",
+      "CODER_AGENT_TOKEN=${coder_agent.main.token}",
+      "GITHUB_TOKEN=${local.github_token}",
+      "HOSTNAME=${local.app}",
+      "PULSAR_APP_NAME=${local.pulsar_app_name}"
+    ],
+    local.database_type == "mariadb" ? [
+      "MYSQL_HOST=mysql",
+      "MYSQL_DATABASE=${local.db_name}",
+      "MYSQL_USER=embold",
+      "MYSQL_PASSWORD=embold"
+    ] : [],
+    local.database_type == "postgres" ? [
+      "PGHOST=postgres",
+      "PGDATABASE=${local.db_name}",
+      "PGUSER=embold",
+      "PGPASSWORD=embold"
+    ] : []
+  )
 
   volumes {
     container_path = "/home/embold"
@@ -390,9 +477,26 @@ resource "coder_metadata" "container_info" {
     key   = "PHP"
     value = local.php_version
   }
-  item {
-    key   = "MariaDB"
-    value = local.mariadb_version
+  dynamic "item" {
+    for_each = local.database_type == "mariadb" ? [1] : []
+    content {
+      key   = "MariaDB"
+      value = local.mariadb_version
+    }
+  }
+  dynamic "item" {
+    for_each = local.database_type == "postgres" ? [1] : []
+    content {
+      key   = "PostgreSQL"
+      value = local.postgres_version
+    }
+  }
+  dynamic "item" {
+    for_each = local.database_type == "none" ? [1] : []
+    content {
+      key   = "Database"
+      value = "None"
+    }
   }
   item {
     key   = "Ubuntu"
