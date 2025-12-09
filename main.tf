@@ -232,6 +232,8 @@ resource "coder_app" "web_app" {
   url          = "http://localhost:443"
   subdomain    = true
   share        = "public"
+  order        = 1
+  open_in      = "tab"
 }
 
 # ------------------------------------------------------------------------------
