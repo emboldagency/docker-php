@@ -55,7 +55,12 @@ export PHP_VERSION=8.3
 Build the image
 
 ```bash
-docker build -t ghcr.io/emboldagency/docker-php:${PHP_VERSION}-ubuntu${UBUNTU_VERSION} --build-arg UBUNTU_VERSION=${UBUNTU_VERSION} --build-arg PHP_VERSION=${PHP_VERSION} ./build
+docker buildx build \
+  --build-arg UBUNTU_VERSION=${UBUNTU_VERSION} \
+  --build-arg PHP_VERSION=${PHP_VERSION} \
+  -t ghcr.io/emboldagency/docker-php:{PHP_VERSION}-ubuntu${UBUNTU_VERSION} \
+  --load \
+  ./build
 ```
 
 If you are pushing to GHCR, authenticate first.
