@@ -148,6 +148,7 @@ locals {
   pulsar_app_name       = data.coder_parameter.pulsar_app_name.value
   pulsar_magic_template = data.coder_parameter.pulsar_magic_template.value
   template_version      = "1.7.0"
+  timezone              = coalesce(module.timezone.timezone, "UTC")
   ubuntu_version        = data.coder_parameter.ubuntu_version.value
   user_email            = data.coder_workspace_owner.me.email
   user_full_name        = coalesce(data.coder_workspace_owner.me.full_name, local.user_username)
@@ -354,7 +355,8 @@ resource "docker_container" "workspace" {
     "MYSQL_DATABASE=${local.db_name}",
     "MYSQL_USER=embold",
     "MYSQL_PASSWORD=embold",
-    "PULSAR_APP_NAME=${local.pulsar_app_name}"
+    "PULSAR_APP_NAME=${local.pulsar_app_name}",
+    "TZ=${local.timezone}"
   ]
 
   volumes {
