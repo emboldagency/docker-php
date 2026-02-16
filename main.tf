@@ -37,11 +37,6 @@ variable "GHP_REGISTRY_PASS" {
 # Coder Parameters
 # ------------------------------------------------------------------------------
 
-data "coder_parameter" "dotfiles_url" {
-  name        = "dotfiles URL"
-  description = "GitHub repository with dotfiles"
-  mutable     = true
-}
 
 data "coder_parameter" "pulsar_app_name" {
   name        = "Pulsar App Name"
@@ -142,7 +137,7 @@ locals {
   app                   = lower(try(length(local.pulsar_app_name), 0) > 0 ? local.pulsar_app_name : local.workspace_name)
   db_name               = replace(local.app, "-", "_")
   dev_url               = "https://webapp--main--${local.workspace_name}--${local.user_username}.embold.dev"
-  dotfiles_url          = data.coder_parameter.dotfiles_url.value
+  dotfiles_uri          = try(module.dotfiles_link[0].dotfiles_uri, "")
   github_token          = data.coder_external_auth.github.access_token
   mariadb_version       = data.coder_parameter.mariadb_version.value
   mariadb_auto_upgrade  = data.coder_parameter.mariadb_auto_upgrade.value ? "1" : "0"
@@ -174,7 +169,7 @@ resource "coder_agent" "main" {
     CODER_WORKSPACE_NAME  = local.workspace_name
     CODER_WORKSPACE_PORT  = 443
     DEVURL                = local.dev_url
-    DOTFILES_URL          = local.dotfiles_url
+    DOTFILES_URL          = local.dotfiles_uri
     GIT_AUTHOR_NAME       = local.user_full_name
     GIT_AUTHOR_EMAIL      = local.user_email
     GIT_COMMITTER_NAME    = local.user_full_name
@@ -435,19 +430,12 @@ module "code-server" {
   }
 }
 
-module "dotfiles" {
-  source       = "registry.coder.com/coder/dotfiles/coder"
-  agent_id     = coder_agent.main.id
-  version      = "1.2.1"
-  dotfiles_uri = local.dotfiles_url
-}
-
 module "dotfiles_link" {
   source       = "git::https://github.com/emboldagency/coder-link-dotfiles.git?ref=v1.0.0"
   count        = data.coder_workspace.me.start_count
-  agent_id     = coder_agent.main.id
-  depends_on   = [module.dotfiles] # Ensure dotfiles are created before we try to link/copy them
-  dotfiles_uri = local.dotfiles_url
+  count    = data.coder_workspace.me.start_count
+  agent_id = coder_agent.main.id
+  user     = "embold"
 }
 
 module "dynamic_services" {
