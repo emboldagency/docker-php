@@ -41,7 +41,7 @@ variable "GHP_REGISTRY_PASS" {
 data "coder_parameter" "pulsar_app_name" {
   name        = "Pulsar App Name"
   description = "What is the Pulsar app name? If this is blank, the workspace name will be used."
-  icon        = "/icon/coder.svg"
+  icon        = "https://api.embold.net/icons/?name=title.svg&color=009dff"
   type        = "string"
   default     = ""
   mutable     = true
@@ -51,7 +51,7 @@ data "coder_parameter" "pulsar_magic_template" {
   name        = "Pulsar Magic Template?"
   description = "Should we use the Pulsar magic template to dynamically build the Pulsar configuration?"
   type        = "bool"
-  icon        = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 576 512'%3E%3Cpath fill='%23009dff' d='M234.7 42.7L197 56.8c-3 1.1-5 4-5 7.2s2 6.1 5 7.2l37.7 14.1L248.8 123c1.1 3 4 5 7.2 5s6.1-2 7.2-5l14.1-37.7L315 71.2c3-1.1 5-4 5-7.2s-2-6.1-5-7.2L277.3 42.7 263.2 5c-1.1-3-4-5-7.2-5s-6.1 2-7.2 5L234.7 42.7zM46.1 395.4c-18.7 18.7-18.7 49.1 0 67.9l34.6 34.6c18.7 18.7 49.1 18.7 67.9 0L529.9 116.5c18.7-18.7 18.7-49.1 0-67.9L495.3 14.1c-18.7-18.7-49.1-18.7-67.9 0L46.1 395.4zM484.6 82.6l-105 105-23.3-23.3 105-105 23.3 23.3zM7.5 117.2C3 118.9 0 123.2 0 128s3 9.1 7.5 10.8L64 160l21.2 56.5c1.7 4.5 6 7.5 10.8 7.5s9.1-3 10.8-7.5L128 160l56.5-21.2c4.5-1.7 7.5-6 7.5-10.8s-3-9.1-7.5-10.8L128 96 106.8 39.5C105.1 35 100.8 32 96 32s-9.1 3-10.8 7.5L64 96 7.5 117.2zm352 256c-4.5 1.7-7.5 6-7.5 10.8s3 9.1 7.5 10.8L416 416l21.2 56.5c1.7 4.5 6 7.5 10.8 7.5s9.1-3 10.8-7.5L480 416l56.5-21.2c4.5-1.7 7.5-6 7.5-10.8s-3-9.1-7.5-10.8L480 352l-21.2-56.5c-1.7-4.5-6-7.5-10.8-7.5s-9.1 3-10.8 7.5L416 352l-56.5 21.2z'/%3E%3C/svg%3E" # Font Awesome magic wand
+  icon        = "https://api.embold.net/icons/?name=fas-magic-wand.svg&color=009dff"
   default     = false
   mutable     = true
 }
@@ -83,12 +83,16 @@ data "coder_parameter" "php_version" {
     name  = "7.4"
     value = "7.4"
   }
+  validation {
+    regex = "^(8\\.4|8\\.3|8\\.2|8\\.1|7\\.4)$"
+    error = "PHP version must be one of: 8.4, 8.3, 8.2, 8.1, or 7.4. See available versions at https://github.com/emboldagency/docker-php/pkgs/container/docker-php"
+  }
 }
 
 data "coder_parameter" "mariadb_version" {
   name        = "MariaDB Version"
   description = "What version of MariaDB? Must match a [mariadb](https://hub.docker.com/_/mariadb) image tag."
-  icon        = "/icon/database.svg"
+  icon        = "https://api.embold.net/icons/?name=mariadb.svg"
   type        = "string"
   default     = "12.1"
   mutable     = true
@@ -97,16 +101,15 @@ data "coder_parameter" "mariadb_version" {
 data "coder_parameter" "mariadb_auto_upgrade" {
   name        = "MariaDB Auto Upgrade"
   description = "Should MariaDB automatically upgrade the database schema? Set this to true if the MariaDB version has changed since the last workspace build."
-  icon        = "/icon/database.svg"
+  icon        = "https://api.embold.net/icons/?name=mariadb.svg"
   type        = "bool"
   default     = false
   mutable     = true
-  ephemeral   = true
 }
 
 data "coder_parameter" "ubuntu_version" {
   name        = "Ubuntu Version"
-  description = "Which version of Ubuntu? Must match a [ghcr.io/emboldagency/docker-base](https://github.com/emboldagency/docker-base/pkgs/container/docker-base) image tag]."
+  description = "Which version of Ubuntu? Must match an available [docker-base image tag](https://github.com/emboldagency/docker-base/pkgs/container/docker-base)."
   icon        = "/icon/ubuntu.svg"
   type        = "string"
   default     = "24.04"
@@ -115,10 +118,10 @@ data "coder_parameter" "ubuntu_version" {
     name  = "24.04 LTS (Noble)"
     value = "24.04"
   }
-  # option {
-  #   name  = "22.04 LTS (Jammy)"
-  #   value = "22.04"
-  # }
+  validation {
+    regex = "^(24\\.04)$"
+    error = "Ubuntu version must be 24.04. See available versions at https://github.com/emboldagency/docker-base/pkgs/container/docker-base"
+  }
 }
 
 # ------------------------------------------------------------------------------
@@ -223,7 +226,7 @@ resource "coder_app" "web_app" {
   agent_id     = coder_agent.main.id
   display_name = "Web App"
   slug         = "webapp"
-  icon         = "/emojis/1f310.png"
+  icon         = "https://api.embold.net/icons/?name=fas-globe.svg&color=009dff"
   url          = "http://localhost:443"
   subdomain    = true
   share        = "public"
