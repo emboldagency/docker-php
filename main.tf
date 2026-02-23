@@ -45,6 +45,7 @@ data "coder_parameter" "pulsar_app_name" {
   type        = "string"
   default     = ""
   mutable     = true
+  order       = 1
 }
 
 data "coder_parameter" "pulsar_magic_template" {
@@ -54,6 +55,7 @@ data "coder_parameter" "pulsar_magic_template" {
   icon        = "https://api.embold.net/icons/?name=fas-magic-wand.svg&color=009dff"
   default     = false
   mutable     = true
+  order       = 2
 }
 
 data "coder_parameter" "php_version" {
@@ -63,6 +65,7 @@ data "coder_parameter" "php_version" {
   type        = "string"
   default     = "8.3"
   mutable     = true
+  order       = 3
   option {
     name  = "8.4"
     value = "8.4"
@@ -96,6 +99,7 @@ data "coder_parameter" "mariadb_version" {
   type        = "string"
   default     = "12.1"
   mutable     = true
+  order       = 4
 }
 
 data "coder_parameter" "mariadb_auto_upgrade" {
@@ -105,6 +109,7 @@ data "coder_parameter" "mariadb_auto_upgrade" {
   type        = "bool"
   default     = false
   mutable     = true
+  order       = 5
 }
 
 data "coder_parameter" "ubuntu_version" {
@@ -114,6 +119,7 @@ data "coder_parameter" "ubuntu_version" {
   type        = "string"
   default     = "24.04"
   mutable     = true
+  order       = 6
   option {
     name  = "24.04 LTS (Noble)"
     value = "24.04"
@@ -411,7 +417,7 @@ resource "coder_metadata" "container_info" {
 # ------------------------------------------------------------------------------
 
 module "adminer" {
-  source              = "git::https://github.com/emboldagency/coder-adminer.git?ref=v1.0.0"
+  source              = "git::https://github.com/emboldagency/coder-registry.git//modules/adminer?ref=main"
   count               = data.coder_workspace.me.start_count
   agent_id            = coder_agent.main.id
   docker_network_name = docker_network.workspace[0].name
@@ -435,25 +441,24 @@ module "code-server" {
   }
 }
 
-module "dotfiles_link" {
-  source       = "git::https://github.com/emboldagency/coder-link-dotfiles.git?ref=v1.0.0"
-  count        = data.coder_workspace.me.start_count
-  count    = data.coder_workspace.me.start_count
-  agent_id = coder_agent.main.id
-  user     = "embold"
+  source          = "git::https://github.com/emboldagency/coder-registry.git//modules/dotfiles?ref=main"
+  count           = data.coder_workspace.me.start_count
+  agent_id        = coder_agent.main.id
+  user            = "embold"
+  parameter_order = 10 # 3 parameters
 }
 
 module "dynamic_services" {
-  source              = "git::https://github.com/emboldagency/coder-dynamic-resources.git?ref=v1.0.0"
+  source              = "git::https://github.com/emboldagency/coder-registry.git//modules/dynamic-resources?ref=main"
   count               = data.coder_workspace.me.start_count
   agent_id            = coder_agent.main.id
   docker_network_name = docker_network.workspace[0].name
   resource_name_base  = "coder-${local.user_username}-${local.workspace_name}"
-  order               = 25
+  parameter_order     = 30 # 34 parameters (pushed towards end)
 }
 
 module "home_setup" {
-  source     = "git::https://github.com/emboldagency/coder-home-setup.git?ref=v1.0.0"
+  source     = "git::https://github.com/emboldagency/coder-registry.git//modules/home-setup?ref=main"
   count      = data.coder_workspace.me.start_count
   agent_id   = coder_agent.main.id
   source_dir = "/coder/home"
@@ -470,7 +475,7 @@ module "jetbrains_gateway" {
 }
 
 module "mailpit" {
-  source              = "git::https://github.com/emboldagency/coder-mailpit.git?ref=v1.0.0"
+  source              = "git::https://github.com/emboldagency/coder-registry.git//modules/mailpit?ref=main"
   count               = data.coder_workspace.me.start_count
   agent_id            = coder_agent.main.id
   docker_network_name = docker_network.workspace[0].name
@@ -479,7 +484,7 @@ module "mailpit" {
 }
 
 module "ssh_setup" {
-  source   = "git::https://github.com/emboldagency/coder-ssh-setup.git?ref=v1.0.0"
+  source   = "git::https://github.com/emboldagency/coder-registry.git//modules/ssh-setup?ref=main"
   count    = data.coder_workspace.me.start_count
   agent_id = coder_agent.main.id
   hosts = [
@@ -495,6 +500,7 @@ module "ssh_setup" {
 }
 
 module "timezone" {
-  source   = "git::https://github.com/emboldagency/coder-timezone.git?ref=v1.0.0"
-  agent_id = coder_agent.main.id
+  source          = "git::https://github.com/emboldagency/coder-registry.git//modules/timezone?ref=main"
+  agent_id        = coder_agent.main.id
+  parameter_order = 7 # 1 parameter
 }
