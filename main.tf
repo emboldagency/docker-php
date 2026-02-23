@@ -410,6 +410,14 @@ resource "coder_metadata" "container_info" {
     key   = "Image"
     value = basename(docker_image.php.name)
   }
+
+  dynamic "item" {
+    for_each = module.dynamic_services[0].connection_metadata
+    content {
+      key   = "Hostname (custom-${item.value.custom_index}, ${split(":", item.value.image)[0]})"
+      value = item.value.hostname
+    }
+  }
 }
 
 # ------------------------------------------------------------------------------
