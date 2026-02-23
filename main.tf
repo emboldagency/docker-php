@@ -145,7 +145,7 @@ data "coder_external_auth" "github" {
 locals {
   app                   = lower(try(length(local.pulsar_app_name), 0) > 0 ? local.pulsar_app_name : local.workspace_name)
   db_name               = replace(local.app, "-", "_")
-  dev_url               = "https://webapp--main--${local.workspace_name}--${local.user_username}.embold.dev"
+  dev_url               = "https://webapp--${local.workspace_name}--${local.user_username}.embold.dev"
   dotfiles_uri          = try(module.dotfiles_link[0].dotfiles_uri, "")
   github_token          = data.coder_external_auth.github.access_token
   mariadb_version       = data.coder_parameter.mariadb_version.value
