@@ -425,7 +425,7 @@ resource "coder_metadata" "container_info" {
 # ------------------------------------------------------------------------------
 
 module "adminer" {
-  source              = "git::https://github.com/emboldagency/coder-registry.git//modules/adminer?ref=main"
+  source              = "git::https://github.com/emboldagency/coder-registry.git//modules/adminer?ref=dev"
   count               = data.coder_workspace.me.start_count
   agent_id            = coder_agent.main.id
   docker_network_name = docker_network.workspace[0].name
@@ -449,7 +449,8 @@ module "code-server" {
   }
 }
 
-  source          = "git::https://github.com/emboldagency/coder-registry.git//modules/dotfiles?ref=main"
+module "dotfiles" {
+  source          = "git::https://github.com/emboldagency/coder-registry.git//modules/dotfiles?ref=dev"
   count           = data.coder_workspace.me.start_count
   agent_id        = coder_agent.main.id
   user            = "embold"
@@ -457,7 +458,7 @@ module "code-server" {
 }
 
 module "dynamic_services" {
-  source              = "git::https://github.com/emboldagency/coder-registry.git//modules/dynamic-resources?ref=main"
+  source              = "git::https://github.com/emboldagency/coder-registry.git//modules/dynamic-resources?ref=dev"
   count               = data.coder_workspace.me.start_count
   agent_id            = coder_agent.main.id
   docker_network_name = docker_network.workspace[0].name
@@ -466,7 +467,7 @@ module "dynamic_services" {
 }
 
 module "home_setup" {
-  source     = "git::https://github.com/emboldagency/coder-registry.git//modules/home-setup?ref=main"
+  source     = "git::https://github.com/emboldagency/coder-registry.git//modules/home-setup?ref=dev"
   count      = data.coder_workspace.me.start_count
   agent_id   = coder_agent.main.id
   source_dir = "/coder/home"
@@ -490,7 +491,7 @@ module "antigravity" {
 }
 
 module "mailpit" {
-  source              = "git::https://github.com/emboldagency/coder-registry.git//modules/mailpit?ref=main"
+  source              = "git::https://github.com/emboldagency/coder-registry.git//modules/mailpit?ref=dev"
   count               = data.coder_workspace.me.start_count
   agent_id            = coder_agent.main.id
   docker_network_name = docker_network.workspace[0].name
@@ -499,7 +500,7 @@ module "mailpit" {
 }
 
 module "ssh_setup" {
-  source   = "git::https://github.com/emboldagency/coder-registry.git//modules/ssh-setup?ref=main"
+  source   = "git::https://github.com/emboldagency/coder-registry.git//modules/ssh-setup?ref=dev"
   count    = data.coder_workspace.me.start_count
   agent_id = coder_agent.main.id
   hosts = [
@@ -515,7 +516,7 @@ module "ssh_setup" {
 }
 
 module "timezone" {
-  source          = "git::https://github.com/emboldagency/coder-registry.git//modules/timezone?ref=main"
+  source          = "git::https://github.com/emboldagency/coder-registry.git//modules/timezone?ref=dev"
   agent_id        = coder_agent.main.id
   parameter_order = 7 # 1 parameter
 }

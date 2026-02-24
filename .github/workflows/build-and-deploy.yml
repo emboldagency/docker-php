@@ -63,9 +63,8 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
+            type=match,pattern=v(.*),group=1,prefix=${{ matrix.php_version }}-ubuntu${{ matrix.ubuntu_version }}-
             type=raw,value=${{ matrix.php_version }}-ubuntu${{ matrix.ubuntu_version }}
-            type=match,pattern=v(.*),group=1,prefix=${{ matrix.php_version }}-ubuntu${{ matrix.ubuntu_version }}-release
-            type=raw,value=latest,enable=${{ matrix.php_version == env.LATEST_PHP && matrix.ubuntu_version == env.LATEST_UBUNTU }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
