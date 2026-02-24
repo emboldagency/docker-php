@@ -1,0 +1,163 @@
+ARG ALPINE_VERSION=3.20
+# Alpine package names are usually versioned without dot (php83)
+ARG PHP_VERSION_DOTLESS=83
+
+# -----------------------------------------------------------------------------
+# Base Setup
+# -----------------------------------------------------------------------------
+FROM ghcr.io/emboldagency/docker-base:alpine${ALPINE_VERSION}-nochrome AS base
+
+ARG PHP_VERSION_DOTLESS
+
+ENV PATH=/home/embold/.composer/vendor/bin:/home/embold/.gems/bin:/coder/gems/bin:$PATH \
+    BUNDLE_DISABLE_SHARED_GEMS=1 \
+    BUNDLE_SILENCE_ROOT_WARNING=1 \
+    PULSAR_CONF_REPO="git@github.com:emboldagency/pulsar.git"
+
+USER root
+
+# Prepare directories
+RUN mkdir -p /coder/gems \
+    && chown -R embold:embold /coder/gems
+
+# -----------------------------------------------------------------------------
+# Install PHP, Apache, Ruby
+# -----------------------------------------------------------------------------
+RUN apk update \
+    && apk add --no-cache \
+    # Web Server & DB Client
+    apache2 \
+    apache2-ctl \
+    apache2-proxy \
+    apache2-ssl \
+    mariadb-client \
+    # PHP Core & Extensions (Adjusted for Alpine naming)
+    php${PHP_VERSION_DOTLESS} \
+    php${PHP_VERSION_DOTLESS}-apache2 \
+    php${PHP_VERSION_DOTLESS}-bcmath \
+    php${PHP_VERSION_DOTLESS}-bz2 \
+    php${PHP_VERSION_DOTLESS}-calendar \
+    php${PHP_VERSION_DOTLESS}-cgi \
+    php${PHP_VERSION_DOTLESS}-common \
+    php${PHP_VERSION_DOTLESS}-ctype \
+    php${PHP_VERSION_DOTLESS}-curl \
+    php${PHP_VERSION_DOTLESS}-dev \
+    php${PHP_VERSION_DOTLESS}-dom \
+    php${PHP_VERSION_DOTLESS}-enchant \
+    php${PHP_VERSION_DOTLESS}-exif \
+    php${PHP_VERSION_DOTLESS}-fileinfo \
+    php${PHP_VERSION_DOTLESS}-fpm \
+    php${PHP_VERSION_DOTLESS}-ftp \
+    php${PHP_VERSION_DOTLESS}-gd \
+    php${PHP_VERSION_DOTLESS}-gettext \
+    php${PHP_VERSION_DOTLESS}-gmp \
+    php${PHP_VERSION_DOTLESS}-iconv \
+    php${PHP_VERSION_DOTLESS}-imap \
+    php${PHP_VERSION_DOTLESS}-intl \
+    php${PHP_VERSION_DOTLESS}-ldap \
+    php${PHP_VERSION_DOTLESS}-mbstring \
+    php${PHP_VERSION_DOTLESS}-mysqli \
+    php${PHP_VERSION_DOTLESS}-mysqlnd \
+    php${PHP_VERSION_DOTLESS}-odbc \
+    php${PHP_VERSION_DOTLESS}-opcache \
+    php${PHP_VERSION_DOTLESS}-openssl \
+    php${PHP_VERSION_DOTLESS}-pdo \
+    php${PHP_VERSION_DOTLESS}-pdo_mysql \
+    php${PHP_VERSION_DOTLESS}-pdo_pgsql \
+    php${PHP_VERSION_DOTLESS}-pdo_sqlite \
+    php${PHP_VERSION_DOTLESS}-pgsql \
+    php${PHP_VERSION_DOTLESS}-phar \
+    php${PHP_VERSION_DOTLESS}-phpdbg \
+    php${PHP_VERSION_DOTLESS}-posix \
+    php${PHP_VERSION_DOTLESS}-pspell \
+    php${PHP_VERSION_DOTLESS}-session \
+    php${PHP_VERSION_DOTLESS}-shmop \
+    php${PHP_VERSION_DOTLESS}-simplexml \
+    php${PHP_VERSION_DOTLESS}-snmp \
+    php${PHP_VERSION_DOTLESS}-soap \
+    php${PHP_VERSION_DOTLESS}-sockets \
+    php${PHP_VERSION_DOTLESS}-sqlite3 \
+    php${PHP_VERSION_DOTLESS}-sysvmsg \
+    php${PHP_VERSION_DOTLESS}-sysvsem \
+    php${PHP_VERSION_DOTLESS}-sysvshm \
+    php${PHP_VERSION_DOTLESS}-tidy \
+    php${PHP_VERSION_DOTLESS}-tokenizer \
+    php${PHP_VERSION_DOTLESS}-xml \
+    php${PHP_VERSION_DOTLESS}-xmlreader \
+    php${PHP_VERSION_DOTLESS}-xmlwriter \
+    php${PHP_VERSION_DOTLESS}-xsl \
+    php${PHP_VERSION_DOTLESS}-zip \
+    # PECL Extensions
+    php${PHP_VERSION_DOTLESS}-pecl-xdebug \
+    php${PHP_VERSION_DOTLESS}-pecl-imagick \
+    # Image Libraries
+    imagemagick \
+    imagemagick-dev \
+    # Ruby (Required for Capistrano/Pulsar)
+    ruby \
+    ruby-dev \
+    ruby-bundler \
+    ruby-rdoc
+
+# -----------------------------------------------------------------------------
+# Configuration
+# -----------------------------------------------------------------------------
+FROM base AS final
+ARG PHP_VERSION_DOTLESS
+
+# Copy Coder files
+COPY --chown=embold:embold --chmod=774 coder /coder
+
+# Symlink generic php binary to the versioned one (php -> php83)
+RUN ln -sf /usr/bin/php${PHP_VERSION_DOTLESS} /usr/bin/php
+
+# Configure Apache & PHP
+RUN cd /coder \
+    # Create the MySQL config directory manually
+    && mkdir -p /etc/mysql/conf.d \
+    && ln -s /coder/conf/embold-mysql.cnf /etc/mysql/conf.d/embold.cnf || true \
+    && ln -s /coder/conf/embold-php.ini /etc/php${PHP_VERSION_DOTLESS}/conf.d/embold.ini \
+    && mkdir -p /etc/apache2/conf.d/custom \
+    && cp conf/embold-apache.conf /etc/apache2/conf.d/embold.conf \
+    # Configure Apache User/Group
+    && sed -i 's/^User apache/User embold/g' /etc/apache2/httpd.conf \
+    && sed -i 's/^Group apache/Group embold/g' /etc/apache2/httpd.conf \
+    && sed -i 's/#LoadModule rewrite_module/LoadModule rewrite_module/' /etc/apache2/httpd.conf \
+    && sed -i 's/#LoadModule headers_module/LoadModule headers_module/' /etc/apache2/httpd.conf \
+    && sed -i 's/AllowOverride None/AllowOverride All/g' /etc/apache2/httpd.conf \
+    # Sync Sites
+    && mkdir -p /etc/apache2/conf.d/sites/ \
+    && rsync -a --delete conf/sites-available/ /etc/apache2/conf.d/sites/ || true \
+    # Combine configure scripts
+    && cat scripts/configure-php >> scripts/configure \
+    # Conditional www-data creation
+    && (grep -q '^www-data:' /etc/group || addgroup -S www-data) \
+    && (grep -q '^www-data:' /etc/passwd || adduser -D -S -H -G www-data www-data) \
+    # Add embold to www-data group (and vice versa)
+    && addgroup embold www-data \
+    && addgroup www-data embold \
+    # WP-CLI
+    && curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
+    && chmod +x wp-cli.phar \
+    && mv wp-cli.phar /usr/local/bin/wp \
+    # --- Composer ---
+    && bash scripts/install-composer.sh \
+    # --- Stable IDE Symlink ---
+    && ln -sf /usr/bin/php${PHP_VERSION_DOTLESS} /usr/local/bin/php-ide
+
+# Create directory for PID file
+RUN mkdir -p /run/apache2 \
+    && chown -R embold:embold /run/apache2
+
+USER embold
+
+# Gems (Pulsar)
+ENV GEM_HOME=/coder/gems
+RUN gem install bundler rake specific_install \
+    && gem specific_install https://github.com/emboldagency/pulsar-embold.git \
+    && rm -rf "$GEM_HOME/cache"/* || true
+
+ENV GEM_HOME=/home/embold/.gems \
+    GEM_PATH=/home/embold/.gems:/coder/gems
+
+CMD ["/bin/zsh"]
