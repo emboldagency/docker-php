@@ -4,7 +4,7 @@ ARG UBUNTU_VERSION=24.04 \
 
 FROM ruby:${RUBY_VERSION}-slim AS ruby
 
-FROM emboldcreative/base:ubuntu${UBUNTU_VERSION} AS base
+FROM ghcr.io/emboldagency/base:ubuntu${UBUNTU_VERSION} AS base
 
 ARG PHP_VERSION \
     RUBY_VERSION

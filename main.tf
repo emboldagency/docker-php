@@ -19,9 +19,9 @@ data "coder_external_auth" "github" {
 
 provider "docker" {
   registry_auth {
-    address  = "registry-1.docker.io"
-    username = "emboldcreative"
-    password = var.DOCKER_REGISTRY_PASS
+    address  = "ghcr.io"
+    username = "emboldagency"
+    password = var.GHP_REGISTRY_PASS
   }
 }
 
@@ -52,7 +52,8 @@ locals {
   workspace_name        = lower(data.coder_workspace.me.name)
 }
 
-variable "DOCKER_REGISTRY_PASS" {
+
+variable "GHP_REGISTRY_PASS" {
   sensitive = true
 }
 
@@ -82,7 +83,7 @@ data "coder_parameter" "pulsar_magic_template" {
 
 data "coder_parameter" "php_version" {
   name        = "PHP Version"
-  description = "Which version of PHP? Must match a emboldcreative/php image tag on DockerHub"
+  description = "Which version of PHP? Must match a [ghcr.io/emboldagency/docker-php](https://github.com/emboldagency/docker-php/pkgs/container/docker-php) image tag."
   icon        = "/icon/php.svg"
   type        = "string"
   default     = "8.3"
@@ -130,7 +131,7 @@ data "coder_parameter" "mariadb_auto_upgrade" {
 
 data "coder_parameter" "ubuntu_version" {
   name        = "Ubuntu Version"
-  description = "Which version of Ubuntu? Must match a emboldcreative/base image tag on DockerHub"
+  description = "Which version of Ubuntu? Must match a [ghcr.io/emboldagency/docker-base](https://github.com/emboldagency/docker-base/pkgs/container/docker-base) image tag]."
   icon        = "/icon/ubuntu.svg"
   type        = "string"
   default     = "24.04"
@@ -280,7 +281,7 @@ resource "docker_container" "mysql" {
 }
 
 data "docker_registry_image" "php" {
-  name = "emboldcreative/php:${local.php_version}-ubuntu${local.ubuntu_version}-${local.template_version}"
+  name = "ghcr.io/emboldagency/docker-php:${local.php_version}-ubuntu${local.ubuntu_version}-release${local.template_version}"
 }
 
 resource "docker_image" "php" {
@@ -358,7 +359,7 @@ resource "coder_metadata" "container_info" {
   }
   item {
     key   = "Image"
-    value = "[${basename(docker_image.php.name)}](https://hub.docker.com/r/${split("/", docker_image.php.name)[0]}/${split(":", split("/", docker_image.php.name)[1])[0]}/tags?name=${split(":", docker_image.php.name)[1]})"
+    value = basename(docker_image.php.name)
   }
 }
 
