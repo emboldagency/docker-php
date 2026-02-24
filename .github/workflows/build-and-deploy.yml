@@ -5,8 +5,7 @@ on:
     branches: # Added this to keep cache warm on main commits
       - main
     tags:
-      # Match a tag with the format v1.0.0
-      - "v[0-9]+.[0-9]+.[0-9]"
+      - "v[0-9]+.[0-9]+.[0-9]+.[0-9]+"
   workflow_dispatch:
     inputs:
       skip-jobs:
