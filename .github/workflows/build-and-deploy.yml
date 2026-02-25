@@ -84,7 +84,8 @@ jobs:
 
   update-coder-template:
     needs: [initialization, build-and-push-docker]
-    if: ${{ !cancelled() && !contains(github.event.inputs['skip-jobs'], 'update-coder-template') && (needs.initialization.outputs.skip-build == 'true' || needs.build-and-push-docker.result == 'success') }}
+    # Only run if not cancelled AND triggered by a tag AND not explicitly skipped AND (build was skipped OR build succeeded)
+    if: ${{ !cancelled() && github.ref_type == 'tag' && !contains(github.event.inputs['skip-jobs'], 'update-coder-template') && (needs.initialization.outputs.skip-build == 'true' || needs.build-and-push-docker.result == 'success') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
