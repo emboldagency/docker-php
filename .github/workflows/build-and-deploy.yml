@@ -107,4 +107,5 @@ jobs:
             --name "${{ github.ref_name }}" \
             --message "Release: ${{ github.ref_name }}" \
             --var "GHP_REGISTRY_PASS=${GHCR_TOKEN}" \
+            --activate=false \
             --yes
