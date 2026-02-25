@@ -7,13 +7,15 @@ icon: /icon/docker.png
 
 # PHP
 
+![Calendar Semantic Versioning](https://embold.net/api/github/badge/calsemver.php?repo=docker-php) [![build-and-deploy.yml](https://embold.net/api/github/badge/workflow-status.php?repo=docker-php&workflow=build-and-deploy.yml)](https://github.com/emboldagency/docker-php/actions/workflows/build-and-deploy.yml)
+
 # Build Process
 
 ## Automated Builds
 
 GitHub Actions is configured to:
 
-- automatically build and push the base images to DockerHub
+- automatically build and push the base images to GHCR
 - push the updated templates to Coder when a new version tag is created on GitHub
 
 The jobs are defined in [build-and-deploy.yml](.github/workflows/build-and-deploy.yml)
@@ -55,7 +57,12 @@ export PHP_VERSION=8.3
 Build the image
 
 ```bash
-docker build -t ghcr.io/emboldagency/docker-php:${PHP_VERSION}-ubuntu${UBUNTU_VERSION} --build-arg UBUNTU_VERSION=${UBUNTU_VERSION} --build-arg PHP_VERSION=${PHP_VERSION} ./build
+docker buildx build \
+  --build-arg UBUNTU_VERSION=${UBUNTU_VERSION} \
+  --build-arg PHP_VERSION=${PHP_VERSION} \
+  -t ghcr.io/emboldagency/docker-php:{PHP_VERSION}-ubuntu${UBUNTU_VERSION} \
+  --load \
+  ./build
 ```
 
 If you are pushing to GHCR, authenticate first.
