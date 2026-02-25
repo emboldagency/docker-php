@@ -38,6 +38,20 @@ variable "GHP_REGISTRY_PASS" {
 # ------------------------------------------------------------------------------
 
 
+# DEPRECATED: Keep this parameter for backward compatibility with workspaces
+# created before the dotfiles module was introduced. Existing workspaces have a
+# stored value under the name "dotfiles URL" — removing it breaks upgrades.
+# TODO: Remove this parameter once all workspaces have been upgraded.
+data "coder_parameter" "dotfiles_url" {
+  name        = "dotfiles URL"
+  description = "GitHub repository with dotfiles (deprecated — use Dotfiles URL below)"
+  icon        = "/icon/dotfiles.svg"
+  type        = "string"
+  default     = ""
+  mutable     = true
+  order       = 0
+}
+
 data "coder_parameter" "pulsar_app_name" {
   name        = "Pulsar App Name"
   description = "What is the Pulsar app name? If this is blank, the workspace name will be used."
@@ -146,7 +160,7 @@ locals {
   app                   = lower(try(length(local.pulsar_app_name), 0) > 0 ? local.pulsar_app_name : local.workspace_name)
   db_name               = replace(local.app, "-", "_")
   dev_url               = "https://webapp--${local.workspace_name}--${local.user_username}.embold.dev"
-  dotfiles_uri          = try(module.dotfiles.dotfiles_uri, "")
+  dotfiles_uri          = try(length(data.coder_parameter.dotfiles_url.value) > 0, false) ? data.coder_parameter.dotfiles_url.value : try(module.dotfiles[0].dotfiles_uri, "")
   github_token          = data.coder_external_auth.github.access_token
   mariadb_version       = data.coder_parameter.mariadb_version.value
   mariadb_auto_upgrade  = data.coder_parameter.mariadb_auto_upgrade.value ? "1" : "0"
@@ -455,6 +469,10 @@ module "dotfiles" {
   agent_id        = coder_agent.main.id
   user            = "embold"
   parameter_order = 10 # 3 parameters
+  # Pass the deprecated dotfiles_url value so the module skips creating its own
+  # parameter when a legacy value exists. On new workspaces the deprecated param
+  # is empty so the module's parameter takes over.
+  dotfiles_uri = try(length(data.coder_parameter.dotfiles_url.value) > 0, false) ? data.coder_parameter.dotfiles_url.value : null
 }
 
 module "dynamic_services" {
