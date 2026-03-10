@@ -37,21 +37,6 @@ variable "GHP_REGISTRY_PASS" {
 # Coder Parameters
 # ------------------------------------------------------------------------------
 
-
-# DEPRECATED: Keep this parameter for backward compatibility with workspaces
-# created before the dotfiles module was introduced. Existing workspaces have a
-# stored value under the name "dotfiles URL" — removing it breaks upgrades.
-# TODO: Remove this parameter once all workspaces have been upgraded.
-data "coder_parameter" "dotfiles_url" {
-  name        = "dotfiles URL"
-  description = "GitHub repository with dotfiles (deprecated — use Dotfiles URL below)"
-  icon        = "/icon/dotfiles.svg"
-  type        = "string"
-  default     = ""
-  mutable     = true
-  order       = 0
-}
-
 data "coder_parameter" "pulsar_app_name" {
   name        = "Pulsar App Name"
   description = "What is the Pulsar app name? If this is blank, the workspace name will be used."
@@ -469,6 +454,7 @@ module "dotfiles" {
   agent_id        = coder_agent.main.id
   user            = "embold"
   parameter_order = 10 # 3 parameters
+  manual_update   = true
   # Pass the deprecated dotfiles_url value so the module skips creating its own
   # parameter when a legacy value exists. On new workspaces the deprecated param
   # is empty so the module's parameter takes over.
@@ -537,4 +523,18 @@ module "timezone" {
   source          = "git::https://github.com/emboldagency/coder-registry.git//modules/timezone?ref=v2026.02.25.0"
   agent_id        = coder_agent.main.id
   parameter_order = 7 # 1 parameter
+}
+
+# DEPRECATED: Keep this parameter for backward compatibility with workspaces
+# created before the dotfiles module was introduced. Existing workspaces have a
+# stored value under the name "dotfiles URL" — removing it breaks upgrades.
+# TODO: Remove this parameter once all workspaces have been upgraded.
+data "coder_parameter" "dotfiles_url" {
+  name        = "dotfiles URL"
+  description = "GitHub repository with dotfiles (deprecated — use Dotfiles URL above)"
+  icon        = "/icon/dotfiles.svg"
+  type        = "string"
+  default     = ""
+  mutable     = true
+  order       = 150
 }
