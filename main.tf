@@ -148,7 +148,7 @@ locals {
   pulsar_app_name       = data.coder_parameter.pulsar_app_name.value
   pulsar_magic_template = data.coder_parameter.pulsar_magic_template.value
   resource_name_base    = "coder-${local.user_username}-${local.workspace_name}"
-  template_version      = "2026.02.25.0"
+  template_version      = "2026.03.11.1"
   timezone              = coalesce(module.timezone.timezone, "UTC")
   ubuntu_version        = data.coder_parameter.ubuntu_version.value
   user_email            = data.coder_workspace_owner.me.email
