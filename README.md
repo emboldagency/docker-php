@@ -54,15 +54,20 @@ export UBUNTU_VERSION=24.04
 export PHP_VERSION=8.3
 ```
 
+Set the template version used by our CI and release tags.
+
+```bash
+export TEMPLATE_VERSION=2026.03.12.0
+```
+
 Build the image
 
 ```bash
 docker buildx build \
   --build-arg UBUNTU_VERSION=${UBUNTU_VERSION} \
   --build-arg PHP_VERSION=${PHP_VERSION} \
-  -t ghcr.io/emboldagency/docker-php:{PHP_VERSION}-ubuntu${UBUNTU_VERSION} \
-  --load \
-  ./build
+  -t ghcr.io/emboldagency/docker-php:${PHP_VERSION}-ubuntu${UBUNTU_VERSION}-${TEMPLATE_VERSION} \
+  ./build --load
 ```
 
 If you are pushing to GHCR, authenticate first.
@@ -79,7 +84,7 @@ echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
 Push the image to the registry
 
 ```bash
-docker push ghcr.io/emboldagency/docker-php:${PHP_VERSION}-ubuntu${UBUNTU_VERSION}
+docker push ghcr.io/emboldagency/docker-php:${PHP_VERSION}-ubuntu${UBUNTU_VERSION}-${TEMPLATE_VERSION}
 ```
 
 ## Coder Template Updates
@@ -90,4 +95,10 @@ To manually run the job without pushing a release tag, or to skip the build step
 
 ### Manual Template Updates
 
-Commit and push any changes to git, then do `coder templates push php` to push the template up to Coder.
+Commit and push any changes to git, then use the coder cli to push the template up to Coder.
+
+```bash
+coder templates push php --name ${TEMPLATE_VERSION}
+```
+
+Note: During testing, you can set `--activate=false` to push the template without marking it as the latest version, so new workspaces won't be prompted to update. Coder does not allow deleting a template version, so once the template name is pushed, you'll need to use a new name for subsequent updates.
