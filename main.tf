@@ -137,26 +137,33 @@ data "coder_external_auth" "github" {
 }
 
 locals {
-  app                   = lower(try(length(local.pulsar_app_name), 0) > 0 ? local.pulsar_app_name : local.workspace_name)
-  db_name               = replace(local.app, "-", "_")
-  dev_url               = "https://webapp--${local.workspace_name}--${local.user_username}.embold.dev"
-  dotfiles_uri          = try(length(data.coder_parameter.dotfiles_url.value) > 0, false) ? data.coder_parameter.dotfiles_url.value : try(module.dotfiles[0].dotfiles_uri, "")
-  github_token          = data.coder_external_auth.github.access_token
-  mariadb_version       = data.coder_parameter.mariadb_version.value
-  mariadb_auto_upgrade  = data.coder_parameter.mariadb_auto_upgrade.value ? "1" : "0"
-  php_version           = data.coder_parameter.php_version.value
-  pulsar_app_name       = data.coder_parameter.pulsar_app_name.value
-  pulsar_magic_template = data.coder_parameter.pulsar_magic_template.value
-  resource_name_base    = "coder-${local.user_username}-${local.workspace_name}"
-  template_version      = "2026.03.11.1"
-  timezone              = coalesce(module.timezone.timezone, "UTC")
-  ubuntu_version        = data.coder_parameter.ubuntu_version.value
-  user_email            = data.coder_workspace_owner.me.email
-  user_full_name        = coalesce(data.coder_workspace_owner.me.full_name, local.user_username)
-  user_id               = data.coder_workspace_owner.me.id
-  user_username         = lower(data.coder_workspace_owner.me.name)
-  workspace_id          = data.coder_workspace.me.id
-  workspace_name        = lower(data.coder_workspace.me.name)
+  app                    = lower(try(length(local.pulsar_app_name), 0) > 0 ? local.pulsar_app_name : local.workspace_name)
+  db_name                = replace(local.app, "-", "_")
+  dev_url                = "https://webapp--${local.workspace_name}--${local.user_username}.embold.dev"
+  dotfiles_uri           = try(module.dotfiles[0].dotfiles_uri, "")
+  github_token           = data.coder_external_auth.github.access_token
+  legacy_mariadb_version = trimspace(try(data.coder_parameter.mariadb_version_legacy.value, ""))
+  legacy_mariadb_pending = local.legacy_mariadb_version != "" && data.coder_parameter.mariadb_version.value != local.legacy_mariadb_version
+  legacy_php_version     = trimspace(try(data.coder_parameter.php_version_legacy.value, ""))
+  legacy_php_pending     = local.legacy_php_version != "" && data.coder_parameter.php_version.value != local.legacy_php_version
+  legacy_ubuntu_version  = trimspace(try(data.coder_parameter.ubuntu_version_legacy.value, ""))
+  legacy_ubuntu_pending  = local.legacy_ubuntu_version != "" && data.coder_parameter.ubuntu_version.value != local.legacy_ubuntu_version
+  has_legacy_params      = local.legacy_php_pending || local.legacy_mariadb_pending || local.legacy_ubuntu_pending
+  mariadb_version        = data.coder_parameter.mariadb_version.value
+  mariadb_auto_upgrade   = data.coder_parameter.mariadb_auto_upgrade.value ? "1" : "0"
+  php_version            = data.coder_parameter.php_version.value
+  pulsar_app_name        = data.coder_parameter.pulsar_app_name.value
+  pulsar_magic_template  = data.coder_parameter.pulsar_magic_template.value
+  resource_name_base     = "coder-${local.user_username}-${local.workspace_name}"
+  template_version       = "2026.03.11.1"
+  timezone               = coalesce(module.timezone.timezone, "UTC")
+  ubuntu_version         = data.coder_parameter.ubuntu_version.value
+  user_email             = data.coder_workspace_owner.me.email
+  user_full_name         = coalesce(data.coder_workspace_owner.me.full_name, local.user_username)
+  user_id                = data.coder_workspace_owner.me.id
+  user_username          = lower(data.coder_workspace_owner.me.name)
+  workspace_id           = data.coder_workspace.me.id
+  workspace_name         = lower(data.coder_workspace.me.name)
 }
 
 # ------------------------------------------------------------------------------
@@ -391,15 +398,15 @@ resource "coder_metadata" "container_info" {
   resource_id = docker_container.workspace[0].id
 
   item {
-    key   = "PHP"
+    key   = "PHP${local.legacy_php_pending ? " (Legacy)" : ""}"
     value = local.php_version
   }
   item {
-    key   = "MariaDB"
+    key   = "MariaDB${local.legacy_mariadb_pending ? " (Legacy)" : ""}"
     value = local.mariadb_version
   }
   item {
-    key   = "Ubuntu"
+    key   = "Ubuntu${local.legacy_ubuntu_pending ? " (Legacy)" : ""}"
     value = local.ubuntu_version
   }
   item {
@@ -412,6 +419,14 @@ resource "coder_metadata" "container_info" {
     content {
       key   = "Hostname (custom-${item.value.custom_index}, ${split(":", item.value.image)[0]})"
       value = item.value.hostname
+    }
+  }
+
+  dynamic "item" {
+    for_each = local.has_legacy_params ? [1] : []
+    content {
+      key   = "Action Required"
+      value = "⚠️ Migrate legacy params"
     }
   }
 }
@@ -529,9 +544,10 @@ module "timezone" {
   parameter_order = 7 # 1 parameter
 }
 
-# DEPRECATED: Keep this parameter for backward compatibility with workspaces
-# created before the dotfiles module was introduced. Existing workspaces have a
-# stored value under the name "dotfiles URL" — removing it breaks upgrades.
+# DEPRECATED: Keep these parameters for backward compatibility with workspaces
+# created while these version fields used their display labels as the stored
+# parameter names. Existing workspaces keep their values under the old names.
+
 # TODO: Remove this parameter once all workspaces have been upgraded.
 data "coder_parameter" "dotfiles_url" {
   name        = "dotfiles URL"
@@ -541,4 +557,38 @@ data "coder_parameter" "dotfiles_url" {
   default     = ""
   mutable     = true
   order       = 150
+}
+
+# TODO: Remove this parameter once all workspaces have been upgraded.
+data "coder_parameter" "php_version_legacy" {
+  name         = "PHP Version"
+  display_name = "PHP Version (deprecated)"
+  description  = "Legacy fallback for workspaces created before the PHP version parameter key was corrected. Leave blank on new workspaces."
+  icon         = "/icon/php.svg"
+  type         = "string"
+  default      = ""
+  mutable      = true
+  order        = 151
+}
+# TODO: Remove this parameter once all workspaces have been upgraded.
+data "coder_parameter" "mariadb_version_legacy" {
+  name         = "MariaDB Version"
+  display_name = "MariaDB Version (deprecated)"
+  description  = "Legacy fallback for workspaces created before the MariaDB version parameter key was corrected. Leave blank on new workspaces."
+  icon         = "https://api.embold.net/icons/?name=mariadb.svg"
+  type         = "string"
+  default      = ""
+  mutable      = true
+  order        = 152
+}
+# TODO: Remove this parameter once all workspaces have been upgraded.
+data "coder_parameter" "ubuntu_version_legacy" {
+  name         = "Ubuntu Version"
+  display_name = "Ubuntu Version (deprecated)"
+  description  = "Legacy fallback for workspaces created before the Ubuntu version parameter key was corrected. Leave blank on new workspaces."
+  icon         = "/icon/ubuntu.svg"
+  type         = "string"
+  default      = ""
+  mutable      = true
+  order        = 153
 }
