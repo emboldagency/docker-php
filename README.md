@@ -57,7 +57,7 @@ export PHP_VERSION=8.3
 Set the template version used by our CI and release tags.
 
 ```bash
-export TEMPLATE_VERSION=2026.03.12.0
+export TEMPLATE_VERSION=2026.04.03.0
 ```
 
 Build the image
