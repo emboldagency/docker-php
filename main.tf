@@ -137,33 +137,35 @@ data "coder_external_auth" "github" {
 }
 
 locals {
-  app                    = lower(try(length(local.pulsar_app_name), 0) > 0 ? local.pulsar_app_name : local.workspace_name)
-  db_name                = replace(local.app, "-", "_")
-  dev_url                = "https://webapp--${local.workspace_name}--${local.user_username}.embold.dev"
-  dotfiles_uri           = try(module.dotfiles[0].dotfiles_uri, "")
-  github_token           = data.coder_external_auth.github.access_token
-  legacy_mariadb_version = trimspace(try(data.coder_parameter.mariadb_version_legacy.value, ""))
-  legacy_mariadb_pending = local.legacy_mariadb_version != "" && data.coder_parameter.mariadb_version.value != local.legacy_mariadb_version
-  legacy_php_version     = trimspace(try(data.coder_parameter.php_version_legacy.value, ""))
-  legacy_php_pending     = local.legacy_php_version != "" && data.coder_parameter.php_version.value != local.legacy_php_version
-  legacy_ubuntu_version  = trimspace(try(data.coder_parameter.ubuntu_version_legacy.value, ""))
-  legacy_ubuntu_pending  = local.legacy_ubuntu_version != "" && data.coder_parameter.ubuntu_version.value != local.legacy_ubuntu_version
-  has_legacy_params      = local.legacy_php_pending || local.legacy_mariadb_pending || local.legacy_ubuntu_pending
-  mariadb_version        = data.coder_parameter.mariadb_version.value
-  mariadb_auto_upgrade   = data.coder_parameter.mariadb_auto_upgrade.value ? "1" : "0"
-  php_version            = data.coder_parameter.php_version.value
-  pulsar_app_name        = data.coder_parameter.pulsar_app_name.value
-  pulsar_magic_template  = data.coder_parameter.pulsar_magic_template.value
-  resource_name_base     = "coder-${local.user_username}-${local.workspace_name}"
-  template_version       = "2026.04.03.0"
-  timezone               = coalesce(module.timezone.timezone, "UTC")
-  ubuntu_version         = data.coder_parameter.ubuntu_version.value
-  user_email             = data.coder_workspace_owner.me.email
-  user_full_name         = coalesce(data.coder_workspace_owner.me.full_name, local.user_username)
-  user_id                = data.coder_workspace_owner.me.id
-  user_username          = lower(data.coder_workspace_owner.me.name)
-  workspace_id           = data.coder_workspace.me.id
-  workspace_name         = lower(data.coder_workspace.me.name)
+  app                     = lower(try(length(local.pulsar_app_name), 0) > 0 ? local.pulsar_app_name : local.workspace_name)
+  db_name                 = replace(local.app, "-", "_")
+  dev_url                 = "https://webapp--${local.workspace_name}--${local.user_username}.embold.dev"
+  dotfiles_uri            = try(module.dotfiles[0].dotfiles_uri, "")
+  github_token            = data.coder_external_auth.github.access_token
+  legacy_dotfiles_url     = trimspace(try(data.coder_parameter.dotfiles_url.value, ""))
+  legacy_dotfiles_pending = local.legacy_dotfiles_url != "" && local.dotfiles_uri != local.legacy_dotfiles_url
+  legacy_mariadb_version  = trimspace(try(data.coder_parameter.mariadb_version_legacy.value, ""))
+  legacy_mariadb_pending  = local.legacy_mariadb_version != "" && data.coder_parameter.mariadb_version.value != local.legacy_mariadb_version
+  legacy_php_version      = trimspace(try(data.coder_parameter.php_version_legacy.value, ""))
+  legacy_php_pending      = local.legacy_php_version != "" && data.coder_parameter.php_version.value != local.legacy_php_version
+  legacy_ubuntu_version   = trimspace(try(data.coder_parameter.ubuntu_version_legacy.value, ""))
+  legacy_ubuntu_pending   = local.legacy_ubuntu_version != "" && data.coder_parameter.ubuntu_version.value != local.legacy_ubuntu_version
+  has_legacy_params       = local.legacy_dotfiles_pending || local.legacy_php_pending || local.legacy_mariadb_pending || local.legacy_ubuntu_pending
+  mariadb_version         = data.coder_parameter.mariadb_version.value
+  mariadb_auto_upgrade    = data.coder_parameter.mariadb_auto_upgrade.value ? "1" : "0"
+  php_version             = data.coder_parameter.php_version.value
+  pulsar_app_name         = data.coder_parameter.pulsar_app_name.value
+  pulsar_magic_template   = data.coder_parameter.pulsar_magic_template.value
+  resource_name_base      = "coder-${local.user_username}-${local.workspace_name}"
+  template_version        = "2026.04.03.0"
+  timezone                = coalesce(module.timezone.timezone, "UTC")
+  ubuntu_version          = data.coder_parameter.ubuntu_version.value
+  user_email              = data.coder_workspace_owner.me.email
+  user_full_name          = coalesce(data.coder_workspace_owner.me.full_name, local.user_username)
+  user_id                 = data.coder_workspace_owner.me.id
+  user_username           = lower(data.coder_workspace_owner.me.name)
+  workspace_id            = data.coder_workspace.me.id
+  workspace_name          = lower(data.coder_workspace.me.name)
 }
 
 # ------------------------------------------------------------------------------
@@ -474,10 +476,6 @@ module "dotfiles" {
   user            = "embold"
   parameter_order = 10 # 3 parameters
   manual_update   = true
-  # Pass the deprecated dotfiles_url value so the module skips creating its own
-  # parameter when a legacy value exists. On new workspaces the deprecated param
-  # is empty so the module's parameter takes over.
-  dotfiles_uri = try(length(data.coder_parameter.dotfiles_url.value) > 0, false) ? data.coder_parameter.dotfiles_url.value : null
 }
 
 module "dynamic_services" {
@@ -550,13 +548,14 @@ module "timezone" {
 
 # TODO: Remove this parameter once all workspaces have been upgraded.
 data "coder_parameter" "dotfiles_url" {
-  name        = "dotfiles URL"
-  description = "GitHub repository with dotfiles (deprecated — use Dotfiles URL above)"
-  icon        = "/icon/dotfiles.svg"
-  type        = "string"
-  default     = ""
-  mutable     = true
-  order       = 150
+  name         = "dotfiles URL"
+  display_name = "Dotfiles URL (deprecated)"
+  description  = "Legacy fallback for workspaces created before the dotfiles parameter key was corrected. Leave blank on new workspaces."
+  icon         = "/icon/dotfiles.svg"
+  type         = "string"
+  default      = ""
+  mutable      = true
+  order        = 150
 }
 
 # TODO: Remove this parameter once all workspaces have been upgraded.
