@@ -43,8 +43,12 @@ jobs:
     strategy:
       fail-fast: false # Don't stop all jobs if one PHP version fails
       matrix:
-        php_version: ["8.4", "8.3", "8.2", "8.1", "7.4"]
-        ubuntu_version: ["24.04"]
+        php_version: ["8.5", "8.4", "8.3", "8.2", "8.1", "7.4"]
+        ubuntu_version: ["24.04", "26.04"]
+        exclude:
+          # ondrej/php PPA dropped PHP 7.4 (EOL Nov 2022) before Ubuntu 26.04 shipped.
+          - php_version: "7.4"
+            ubuntu_version: "26.04"
 
     steps:
       - name: Checkout Repository

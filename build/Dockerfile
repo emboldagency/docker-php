@@ -47,7 +47,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     php${PHP_VERSION}-mbstring \
     php${PHP_VERSION}-mysql \
     php${PHP_VERSION}-odbc \
-    php${PHP_VERSION}-opcache \
     php${PHP_VERSION}-pgsql \
     php${PHP_VERSION}-phpdbg \
     php${PHP_VERSION}-pspell \
@@ -77,18 +76,49 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 # -----------------------------------------------------------------------------
 # Platform Specific Logic
 # -----------------------------------------------------------------------------
+# opcache is a standalone package for PHP < 8.5; 8.5+ bundles it into core.
 FROM base AS php7.4
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update \
     && apt-get install -y -q --no-install-recommends \
     php7.4-json \
+    php7.4-opcache \
     && rm -rf /var/lib/apt/lists/*
 
 FROM base AS php8.1
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update \
+    && apt-get install -y -q --no-install-recommends \
+    php8.1-opcache \
+    && rm -rf /var/lib/apt/lists/*
+
 FROM base AS php8.2
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update \
+    && apt-get install -y -q --no-install-recommends \
+    php8.2-opcache \
+    && rm -rf /var/lib/apt/lists/*
+
 FROM base AS php8.3
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update \
+    && apt-get install -y -q --no-install-recommends \
+    php8.3-opcache \
+    && rm -rf /var/lib/apt/lists/*
+
 FROM base AS php8.4
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update \
+    && apt-get install -y -q --no-install-recommends \
+    php8.4-opcache \
+    && rm -rf /var/lib/apt/lists/*
+
+FROM base AS php8.5
 
 # -----------------------------------------------------------------------------
 # Final Configuration

@@ -67,6 +67,10 @@ data "coder_parameter" "php_version" {
   mutable      = true
   order        = 3
   option {
+    name  = "8.5"
+    value = "8.5"
+  }
+  option {
     name  = "8.4"
     value = "8.4"
   }
@@ -121,6 +125,10 @@ data "coder_parameter" "ubuntu_version" {
   option {
     name  = "24.04 LTS (Noble)"
     value = "24.04"
+  }
+  option {
+    name  = "26.04 LTS (Resolute)"
+    value = "26.04"
   }
 }
 
