@@ -542,6 +542,14 @@ module "timezone" {
   parameter_order = 7 # 1 parameter
 }
 
+module "vault" {
+  source     = "registry.coder.com/coder/vault-github/coder"
+  version    = "1.1.2"
+  count      = data.coder_workspace.me.start_count
+  agent_id   = coder_agent.main.id
+  vault_addr = "https://vault.embold.dev"
+}
+
 # DEPRECATED: Keep these parameters for backward compatibility with workspaces
 # created while these version fields used their display labels as the stored
 # parameter names. Existing workspaces keep their values under the old names.
