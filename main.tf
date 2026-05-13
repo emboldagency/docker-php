@@ -126,10 +126,6 @@ data "coder_parameter" "ubuntu_version" {
     name  = "24.04 LTS (Noble)"
     value = "24.04"
   }
-  option {
-    name  = "26.04 LTS (Resolute)"
-    value = "26.04"
-  }
 }
 
 # ------------------------------------------------------------------------------
