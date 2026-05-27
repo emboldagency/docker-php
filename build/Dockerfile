@@ -66,6 +66,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     dh-php \
     imagemagick \
     libmagickwand-dev \
+    libheif-plugin-aomenc \
     # Ruby for Pulsar
     ruby-full \
     # Postgres client libraries
