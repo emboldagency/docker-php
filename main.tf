@@ -363,6 +363,9 @@ resource "docker_container" "workspace" {
 
   env = compact([
     "APP=${local.app}",
+    # No docker daemon/socket in workspaces; stops the agent's `docker ps`
+    # probe that 500s the dashboard's /containers call.
+    "CODER_AGENT_DEVCONTAINERS_ENABLE=false",
     "CODER_AGENT_TOKEN=${coder_agent.main.token}",
     "GITHUB_TOKEN=${local.github_token}",
     "HOSTNAME=${local.app}",
