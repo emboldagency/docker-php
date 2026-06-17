@@ -136,6 +136,12 @@ data "coder_provisioner" "me" {}
 data "coder_workspace" "me" {}
 data "coder_workspace_owner" "me" {}
 
+# Gates workspace creation on GitHub external-auth being authorized so that
+# `coder external-auth access-token github` works at runtime. We intentionally
+# do NOT inject .access_token into the agent/container env: it's a GitHub App
+# user-to-server token (ghu_…) with a finite TTL, so a build-time snapshot goes
+# stale while the workspace stays up. Tools fetch a fresh token at runtime
+# instead (git via GIT_ASKPASS/coder gitssh; gh/vault via `coder external-auth`).
 data "coder_external_auth" "github" {
   id = "github"
 }
@@ -145,7 +151,6 @@ locals {
   db_name                 = replace(local.app, "-", "_")
   dev_url                 = "https://webapp--${local.workspace_name}--${local.user_username}.embold.dev"
   dotfiles_uri            = try(module.dotfiles[0].dotfiles_uri, "")
-  github_token            = data.coder_external_auth.github.access_token
   legacy_dotfiles_url     = trimspace(try(data.coder_parameter.dotfiles_url.value, ""))
   legacy_dotfiles_pending = local.legacy_dotfiles_url != "" && local.dotfiles_uri != local.legacy_dotfiles_url
   legacy_mariadb_version  = trimspace(try(data.coder_parameter.mariadb_version_legacy.value, ""))
@@ -367,7 +372,7 @@ resource "docker_container" "workspace" {
     # probe that 500s the dashboard's /containers call.
     "CODER_AGENT_DEVCONTAINERS_ENABLE=false",
     "CODER_AGENT_TOKEN=${coder_agent.main.token}",
-    "GITHUB_TOKEN=${local.github_token}",
+    # No static GITHUB_TOKEN here on purpose — see data.coder_external_auth.github.
     "HOSTNAME=${local.app}",
     "MYSQL_HOST=mysql",
     "MYSQL_DATABASE=${local.db_name}",
