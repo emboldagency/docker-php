@@ -81,8 +81,8 @@ jobs:
           build-args: |
             PHP_VERSION=${{ matrix.php_version }}
             UBUNTU_VERSION=${{ matrix.ubuntu_version }}
-          cache-from: type=gha,scope=php-${{ matrix.php_version }}-ubuntu-${{ matrix.ubuntu_version }}
-          cache-to: type=gha,mode=max,scope=php-${{ matrix.php_version }}-ubuntu-${{ matrix.ubuntu_version }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache-php-${{ matrix.php_version }}-ubuntu-${{ matrix.ubuntu_version }}
+          cache-to: type=registry,mode=max,image-manifest=true,oci-mediatypes=true,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache-php-${{ matrix.php_version }}-ubuntu-${{ matrix.ubuntu_version }}
 
   update-coder-template:
     needs: [initialization, build-and-push-docker]
