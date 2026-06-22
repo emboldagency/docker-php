@@ -17,7 +17,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   LATEST_UBUNTU: "24.04"
-  LATEST_PHP: "8.3"
+  LATEST_PHP: "8.5"
 
 jobs:
   initialization:

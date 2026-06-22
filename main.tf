@@ -63,7 +63,7 @@ data "coder_parameter" "php_version" {
   description  = "Which version of PHP? Must match a [ghcr.io/emboldagency/docker-php](https://github.com/emboldagency/docker-php/pkgs/container/docker-php) image tag."
   icon         = "/icon/php.svg"
   type         = "string"
-  default      = "8.3"
+  default      = "8.5"
   mutable      = true
   order        = 3
   option {
