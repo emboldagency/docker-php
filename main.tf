@@ -40,7 +40,7 @@ variable "GHP_REGISTRY_PASS" {
 data "coder_parameter" "pulsar_app_name" {
   name        = "Pulsar App Name"
   description = "What is the Pulsar app name? If this is blank, the workspace name will be used."
-  icon        = "https://api.embold.net/icons/?name=title.svg&color=009dff"
+  icon        = "https://api.embold.net/icons/title.svg"
   type        = "string"
   default     = ""
   mutable     = true
@@ -51,7 +51,7 @@ data "coder_parameter" "pulsar_magic_template" {
   name        = "Pulsar Magic Template?"
   description = "Should we use the Pulsar magic template to dynamically build the Pulsar configuration?"
   type        = "bool"
-  icon        = "https://api.embold.net/icons/?name=fas-magic-wand.svg&color=009dff"
+  icon        = "https://api.embold.net/icons/fas-magic-wand.svg"
   default     = false
   mutable     = true
   order       = 2
@@ -96,7 +96,7 @@ data "coder_parameter" "mariadb_version" {
   name         = "mariadb_version"
   display_name = "MariaDB Version"
   description  = "What version of MariaDB? Must match a [mariadb](https://hub.docker.com/_/mariadb) image tag."
-  icon         = "https://api.embold.net/icons/?name=mariadb.svg"
+  icon         = "https://api.embold.net/icons/mariadb.svg"
   type         = "string"
   default      = "12.1"
   mutable      = true
@@ -106,7 +106,7 @@ data "coder_parameter" "mariadb_version" {
 data "coder_parameter" "mariadb_auto_upgrade" {
   name        = "MariaDB Auto Upgrade"
   description = "Should MariaDB automatically upgrade the database schema? Set this to true if the MariaDB version has changed since the last workspace build."
-  icon        = "https://api.embold.net/icons/?name=mariadb.svg"
+  icon        = "https://api.embold.net/icons/mariadb.svg"
   type        = "bool"
   default     = false
   mutable     = true
@@ -247,7 +247,7 @@ resource "coder_app" "web_app" {
   agent_id     = coder_agent.main.id
   display_name = "Web App"
   slug         = "webapp"
-  icon         = "https://api.embold.net/icons/?name=fas-globe.svg&color=009dff"
+  icon         = "https://api.embold.net/icons/fas-globe.svg"
   url          = "http://localhost:443"
   subdomain    = true
   share        = "public"
@@ -589,7 +589,7 @@ data "coder_parameter" "mariadb_version_legacy" {
   name         = "MariaDB Version"
   display_name = "MariaDB Version (deprecated)"
   description  = "Legacy fallback for workspaces created before the MariaDB version parameter key was corrected. Leave blank on new workspaces."
-  icon         = "https://api.embold.net/icons/?name=mariadb.svg"
+  icon         = "https://api.embold.net/icons/mariadb.svg"
   type         = "string"
   default      = ""
   mutable      = true
