@@ -237,6 +237,17 @@ resource "coder_agent" "main" {
     order        = 4
   }
 
+  # On-disk size of the MariaDB volume (mounted read-only at /mnt/mysql-data).
+  # Differs from "Database Size" (logical) by redo/undo logs and tablespace slack.
+  metadata {
+    display_name = "Database Disk Usage"
+    key          = "mysql_disk_usage"
+    script       = "du -BG --apparent-size /mnt/mysql-data 2>/dev/null | tail -1 | awk '{print $1}'"
+    interval     = 300
+    timeout      = 30
+    order        = 5
+  }
+
   startup_script = <<-EOT
     set -e
     /bin/bash /coder/scripts/configure
@@ -390,6 +401,14 @@ resource "docker_container" "workspace" {
     container_path = "/home/embold"
     volume_name    = docker_volume.home_volume.name
     read_only      = false
+  }
+
+  # Read-only so the agent can `du` the DB volume for the disk-usage metric.
+  # du only stats files, so RO access to the live datadir is safe.
+  volumes {
+    container_path = "/mnt/mysql-data"
+    volume_name    = docker_volume.mysql_volume.name
+    read_only      = true
   }
 
   # Add labels in Docker to keep track of orphan resources.
