@@ -45,23 +45,25 @@ variable "playwright_token" {
 # ------------------------------------------------------------------------------
 
 data "coder_parameter" "pulsar_app_name" {
-  name        = "Pulsar App Name"
-  description = "What is the Pulsar app name? If this is blank, the workspace name will be used."
-  icon        = "https://api.embold.net/icons/title.svg"
-  type        = "string"
-  default     = ""
-  mutable     = true
-  order       = 1
+  name         = "pulsar_app_name"
+  display_name = "Pulsar App Name"
+  description  = "What is the Pulsar app name? If this is blank, the workspace name will be used."
+  icon         = "https://api.embold.net/icons/title.svg"
+  type         = "string"
+  default      = ""
+  mutable      = true
+  order        = 1
 }
 
 data "coder_parameter" "pulsar_magic_template" {
-  name        = "Pulsar Magic Template?"
-  description = "Should we use the Pulsar magic template to dynamically build the Pulsar configuration?"
-  type        = "bool"
-  icon        = "https://api.embold.net/icons/fas-magic-wand.svg"
-  default     = false
-  mutable     = true
-  order       = 2
+  name         = "pulsar_magic_template"
+  display_name = "Pulsar Magic Template?"
+  description  = "Should we use the Pulsar magic template to dynamically build the Pulsar configuration?"
+  type         = "bool"
+  icon         = "https://api.embold.net/icons/fas-magic-wand.svg"
+  default      = true
+  mutable      = true
+  order        = 2
 }
 
 data "coder_parameter" "php_version" {
