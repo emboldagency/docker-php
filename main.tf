@@ -211,7 +211,6 @@ resource "coder_agent" "main" {
     CODER_WORKSPACE_NAME   = local.workspace_name
     CODER_WORKSPACE_PORT   = 443
     DEVURL                 = local.dev_url
-    DOTFILES_URL           = local.dotfiles_uri
     GIT_AUTHOR_NAME        = local.user_full_name
     GIT_AUTHOR_EMAIL       = local.user_email
     GIT_COMMITTER_NAME     = local.user_full_name
