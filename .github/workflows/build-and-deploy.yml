@@ -16,7 +16,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  LATEST_UBUNTU: "24.04"
+  LATEST_UBUNTU: "26.04"
   LATEST_PHP: "8.5"
 
 jobs:
@@ -44,9 +44,7 @@ jobs:
       fail-fast: false # Don't stop all jobs if one PHP version fails
       matrix:
         php_version: ["8.5", "8.4", "8.3", "8.2", "8.1", "7.4"]
-        # 26.04 (resolute) is omitted: ondrej/php and ondrej/apache2 PPAs
-        # haven't been backfilled for it yet. Re-add once those publish.
-        ubuntu_version: ["24.04"]
+        ubuntu_version: ["26.04", "24.04"]
 
     steps:
       - name: Checkout Repository

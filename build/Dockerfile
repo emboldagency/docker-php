@@ -18,8 +18,18 @@ USER root
 # We use --mount=type=cache to speed up apt downloads
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    CODENAME=$(. /etc/os-release && echo $VERSION_CODENAME) \
+    # ondrej's PHP/Apache PPAs don't publish for Ubuntu 26.04+ (resolute); Sury's own repo
+    # (the same upstream — ondrej is migrating there) is the canonical source there instead.
+    && if [ "$CODENAME" = "resolute" ]; then \
+    curl -fsSL https://packages.sury.org/php/apt.gpg -o /etc/apt/trusted.gpg.d/sury-php.gpg \
+    && echo "deb https://packages.sury.org/php/ ${CODENAME} main" > /etc/apt/sources.list.d/sury-php.list \
+    && curl -fsSL https://packages.sury.org/apache2/apt.gpg -o /etc/apt/trusted.gpg.d/sury-apache2.gpg \
+    && echo "deb https://packages.sury.org/apache2/ ${CODENAME} main" > /etc/apt/sources.list.d/sury-apache2.list; \
+    else \
     add-apt-repository -y ppa:ondrej/php \
-    && add-apt-repository -y ppa:ondrej/apache2 \
+    && add-apt-repository -y ppa:ondrej/apache2; \
+    fi \
     && apt-get update \
     && apt-get install -y -q --no-install-recommends \
     # The Apache HTTP Server
