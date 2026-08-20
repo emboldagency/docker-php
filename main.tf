@@ -536,7 +536,8 @@ module "dotfiles" {
   agent_id        = coder_agent.main.id
   user            = "embold"
   parameter_order = 10 # 3 parameters
-  manual_update   = true
+  # TODO: Fix the manual "Refresh Dotfiles" webapp.
+  manual_update = false
 }
 
 module "dynamic_services" {
