@@ -16,20 +16,16 @@ USER root
 
 # Install PHP, Apache, and SSL support
 # We use --mount=type=cache to speed up apt downloads
+# Bump PHP_REFRESH to force a fresh apt layer past the registry build cache (security releases).
+ARG PHP_REFRESH=2026-10-21
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     CODENAME=$(. /etc/os-release && echo $VERSION_CODENAME) \
-    # ondrej's PHP/Apache PPAs don't publish for Ubuntu 26.04+ (resolute); Sury's own repo
-    # (the same upstream — ondrej is migrating there) is the canonical source there instead.
-    && if [ "$CODENAME" = "resolute" ]; then \
-    curl -fsSL https://packages.sury.org/php/apt.gpg -o /etc/apt/trusted.gpg.d/sury-php.gpg \
+    # Sury's own repo is the canonical, current source.
+    && curl -fsSL https://packages.sury.org/php/apt.gpg -o /etc/apt/trusted.gpg.d/sury-php.gpg \
     && echo "deb https://packages.sury.org/php/ ${CODENAME} main" > /etc/apt/sources.list.d/sury-php.list \
     && curl -fsSL https://packages.sury.org/apache2/apt.gpg -o /etc/apt/trusted.gpg.d/sury-apache2.gpg \
-    && echo "deb https://packages.sury.org/apache2/ ${CODENAME} main" > /etc/apt/sources.list.d/sury-apache2.list; \
-    else \
-    add-apt-repository -y ppa:ondrej/php \
-    && add-apt-repository -y ppa:ondrej/apache2; \
-    fi \
+    && echo "deb https://packages.sury.org/apache2/ ${CODENAME} main" > /etc/apt/sources.list.d/sury-apache2.list \
     && apt-get update \
     && apt-get install -y -q --no-install-recommends \
     # The Apache HTTP Server
@@ -83,6 +79,15 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     libpq-dev \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
+
+# Fail the build if apt resolved a PHP older than the CVE-2026-109618/109619 fix.
+# 8.1 and 7.4 are EOL upstream; Sury backports the fix, so those are package revisions.
+RUN MIN=$(case "${PHP_VERSION}" in \
+    8.5) echo 8.5.12 ;; 8.4) echo 8.4.27 ;; 8.3) echo 8.3.36 ;; 8.2) echo 8.2.35 ;; \
+    8.1) echo 8.1.34-9 ;; 7.4) echo 1:7.4.33-31 ;; esac) \
+    && HAVE=$(dpkg-query -W -f='${Version}' php${PHP_VERSION}-cli) \
+    && echo "php${PHP_VERSION}-cli ${HAVE} (minimum ${MIN:-none})" \
+    && { [ -z "$MIN" ] || dpkg --compare-versions "$HAVE" ge "$MIN"; }
 
 # -----------------------------------------------------------------------------
 # Platform Specific Logic
