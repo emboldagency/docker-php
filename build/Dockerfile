@@ -17,7 +17,7 @@ USER root
 # Install PHP, Apache, and SSL support
 # We use --mount=type=cache to speed up apt downloads
 # Bump PHP_REFRESH to force a fresh apt layer past the registry build cache (security releases).
-ARG PHP_REFRESH=2026-10-21
+ARG PHP_REFRESH=2026-11-05
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     CODENAME=$(. /etc/os-release && echo $VERSION_CODENAME) \
@@ -188,7 +188,7 @@ USER embold
 # Gems installed last
 RUN gem install bundler rake specific_install \
     && gem specific_install https://github.com/emboldagency/pulsar-embold.git \
-    && rm -rf "$GEM_HOME/cache"/* || true
+    && (rm -rf "$GEM_HOME/cache"/* || true)
 
 ENV GEM_HOME=/home/embold/.gem/ruby/${RUBY_VERSION} \
     GEM_PATH=/home/embold/.gem/ruby/${RUBY_VERSION}:/coder/gems/ruby/${RUBY_VERSION}
