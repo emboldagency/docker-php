@@ -2,5 +2,7 @@
 host=mysql
 user=embold
 password=embold
+# MariaDB 11.4+ clients (Ubuntu 26.04) require TLS by default; older sidecars don't offer it.
+skip-ssl
 
 [mysql]
