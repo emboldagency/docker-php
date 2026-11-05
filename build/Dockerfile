@@ -17,7 +17,7 @@ USER root
 # Install PHP, Apache, and SSL support
 # We use --mount=type=cache to speed up apt downloads
 # Bump PHP_REFRESH to force a fresh apt layer past the registry build cache (security releases).
-ARG PHP_REFRESH=2026-10-21
+ARG PHP_REFRESH=2026-11-05
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     CODENAME=$(. /etc/os-release && echo $VERSION_CODENAME) \
