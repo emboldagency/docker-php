@@ -188,7 +188,7 @@ USER embold
 # Gems installed last
 RUN gem install bundler rake specific_install \
     && gem specific_install https://github.com/emboldagency/pulsar-embold.git \
-    && rm -rf "$GEM_HOME/cache"/* || true
+    && (rm -rf "$GEM_HOME/cache"/* || true)
 
 ENV GEM_HOME=/home/embold/.gem/ruby/${RUBY_VERSION} \
     GEM_PATH=/home/embold/.gem/ruby/${RUBY_VERSION}:/coder/gems/ruby/${RUBY_VERSION}
